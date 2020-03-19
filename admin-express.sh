@@ -3,7 +3,7 @@
 ARCHIVE=$1
 
 # donwload the archive
-wget ftp://Admin_Express_ext:Dahnoh0eigheeFok@ftp3.ign.fr/$ARCHIVE
+curl --insecure ftp://Admin_Express_ext:Dahnoh0eigheeFok@ftp3.ign.fr/$ARCHIVE --output $ARCHIVE
 
 # extract the archive
 7z x $ARCHIVE
