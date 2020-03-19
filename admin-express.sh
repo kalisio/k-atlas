@@ -17,6 +17,6 @@ for SHAPE in $SHAPES; do
   JSON_BASENAME=${SHAPE_BASENAME//.shp/.geoson}
   echo converting $SHAPE_BASENAME in $JSON_BASENAME
   pushd "$SHAPE_PATH"
-  mapshaper -i $SHAPE_BASENAME -o format=geojson precision=0.00001 $JSON_BASENAME
+  mapshaper -i $SHAPE_BASENAME -o format=geojson precision=0.000001 $JSON_BASENAME
   popd
 done
