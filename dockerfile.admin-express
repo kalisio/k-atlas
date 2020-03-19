@@ -23,7 +23,7 @@ RUN npm install -g mapshaper
 
 # Install the job
 COPY jobfile-admin-express.js .
-COPY admin-express.sh
+COPY admin-express.sh .
 
 # Add default healthcheck
 HEALTHCHECK --interval=1m --timeout=10s --start-period=1m CMD node /opt/krawler/healthcheck.js
