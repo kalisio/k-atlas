@@ -1,0 +1,39 @@
+{
+  "name": "k-atlas",
+  "description": "",
+  "version": "1.0.1",
+  "homepage": "https://github.com/kalisio/k-atlas",
+  "keywords": [
+    "krawler",
+    "kargo",
+    "admin-express"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kalisio/k-atlas.git"
+  },
+  "author": {
+    "name": "Kalisio",
+    "url": "https://github.com/kalisio"
+  },
+  "contributors": [],
+  "bugs": {
+    "url": "https://github.com/kalisio/k-atlas/issues"
+  },
+  "scripts": {
+    "test": "echo \"Warning: no test specified\"",
+    "changelog": "changelog -x build,ci,chore,docs,other,perf,refactor,revert,style,test",
+    "release:major": "npm run changelog -- -M && git add CHANGELOG.md && git commit -m \"chore: updated CHANGELOG.md\" && npm version --force major",
+    "release:minor": "npm run changelog -- -m && git add CHANGELOG.md && git commit -m \"chore: Updated CHANGELOG.md\" && npm version --force minor",
+    "release:patch": "npm run changelog -- -p && git add CHANGELOG.md && git commit -m \"chore: Updated CHANGELOG.md\" && npm version --force patch",
+    "postversion": "git push origin --tags"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "generate-changelog": "^1.8.0"
+  },
+  "peerDependencies": {
+    "@kalisio/krawler": "1.0.0"
+  }
+}
