@@ -83,7 +83,7 @@ module.exports = {
           clientPath: 'taskTemplate.client'
         },
         runCommand: {
-          command: 'admin-express.sh ' + archive + ' ' + host + ' ' + user + ' ' + passwd
+          command: './admin-express.sh ' + archive + ' ' + host + ' ' + user + ' ' + passwd
         },
         generateTasks: {}
       },
