@@ -1,22 +1,31 @@
 #/!bin/sh
 
 ARCHIVE=$1
+HOST=$2
+USER=$3
+PASS=$4
 
 # donwload the archive
-lftp -u Admin_Express_ext,Dahnoh0eigheeFok ftp3.ign.fr -e "get $ARCHIVE; bye"
+# note: wget stuck in passive mode and curl is really slow 
+lftp -u $USER,$PASS $HOST -e "get $ARCHIVE; bye"
 
 # extract the archive
+rm -fr admin-express
 7z x $ARCHIVE -oadmin-express
 
 # find the shape files
 SHAPES=`find admin-express -name *.shp`
+
+# iterate though the files and convert them using mapshaper
+WORKDIR=`pwd`
 for SHAPE in $SHAPES; do
   echo processing $SHAPE
   SHAPE_PATH=`dirname "${SHAPE}"`
   SHAPE_BASENAME=`basename "${SHAPE}"`
-  JSON_BASENAME=${SHAPE_BASENAME//.shp/.geojson}
+  JSON_BASENAME=`echo $SHAPE_BASENAME | sed -e 's/.shp/.geojson/g'` # cannot use variable substitution as we are running in shell not bash
   echo converting $SHAPE_BASENAME in $JSON_BASENAME
-  pushd "$SHAPE_PATH"
+  cd $SHAPE_PATH
   mapshaper -i $SHAPE_BASENAME -o format=geojson precision=0.000001 $JSON_BASENAME
-  popd
+  cd $WORKDIR
 done
+

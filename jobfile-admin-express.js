@@ -9,6 +9,9 @@ const hooks = krawler.hooks
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/atlas'
 
 const archive = 'ADMIN-EXPRESS_2-2__SHP__FRA_WM_2020-02-24.7z.001'
+const user = 'Admin_Express_ext'
+const passwd = 'Dahnoh0eigheeFok'
+const host = 'ftp3.ign.fr'
 
 let generateTasks = (options) => {
   return async (hook) => {
@@ -80,7 +83,7 @@ module.exports = {
           clientPath: 'taskTemplate.client'
         },
         runCommand: {
-          command: '"bash ./admin-express.sh ' + archive + '"'
+          command: '"bash ./admin-express.sh ' + archive + " " + host + " " + user + " " + passwd + '"'
         },
         generateTasks: {}
       },
