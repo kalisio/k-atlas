@@ -7,9 +7,11 @@ PASS=$4
 
 # donwload the archive
 # note: wget stuck in passive mode and curl is really slow 
+echo "<> downloading $ARCHIVE from $HOST" 
 lftp -u $USER,$PASS $HOST -e "get $ARCHIVE; bye"
 
 # extract the archive
+echo "<> extracting $ARCHIVE"
 rm -fr admin-express
 7z x $ARCHIVE -oadmin-express
 
@@ -17,6 +19,7 @@ rm -fr admin-express
 SHAPES=`find admin-express -name *.shp`
 
 # iterate though the files and convert them using mapshaper
+echo "<> converting files"
 WORKDIR=`pwd`
 for SHAPE in $SHAPES; do
   echo processing $SHAPE
