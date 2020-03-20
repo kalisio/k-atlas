@@ -2,6 +2,7 @@
 const _ = require('lodash')
 const path = require('path')
 const glob = require('glob')
+const turf = require('@turf/turf')
 const krawler = require('@kalisio/krawler')
 const getStoreFromHook = krawler.utils.getStoreFromHook
 const hooks = krawler.hooks
@@ -51,6 +52,15 @@ module.exports = {
         readJson: {
           key: '<%= key %>'
         },
+        apply: {
+          function: (item) => {
+            _.forEach(item.data.features, (feature) => {
+              if (feature.geometry !== 'Point') {
+                feature['centroid'] = turf.centroid(feature.geometry).geometry
+              }
+            })
+          }
+        },
         dropMongoCollection: {
           collection: '<%= id %>'
         },
@@ -70,8 +80,6 @@ module.exports = {
     jobs: {
       before: {
         createStores: [{
-          id: 'memory'
-        }, {
           id: 'fs',
           options: {
             path: path.join(__dirname, 'admin-express')
@@ -91,13 +99,13 @@ module.exports = {
         disconnectMongo: {
           clientPath: 'taskTemplate.client'
         },
-        removeStores: ['memory', 'fs']
+        removeStores: ['fs']
       },
       error: {
         disconnectMongo: {
           clientPath: 'taskTemplate.client'
         },
-        removeStores: ['memory', 'fs']
+        removeStores: ['fs']
       }
     }
   }
