@@ -1,4 +1,4 @@
-#/!bin/bash
+#/!bin/sh
 
 ARCHIVE=$1
 
@@ -14,7 +14,7 @@ for SHAPE in $SHAPES; do
   echo processing $SHAPE
   SHAPE_PATH=`dirname "${SHAPE}"`
   SHAPE_BASENAME=`basename "${SHAPE}"`
-  JSON_BASENAME=${SHAPE_BASENAME//.shp/.geoson}
+  JSON_BASENAME=${SHAPE_BASENAME//.shp/.geojson}
   echo converting $SHAPE_BASENAME in $JSON_BASENAME
   pushd "$SHAPE_PATH"
   mapshaper -i $SHAPE_BASENAME -o format=geojson precision=0.000001 $JSON_BASENAME
