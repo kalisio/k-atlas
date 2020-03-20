@@ -16,7 +16,7 @@ COPY --from=krawler /opt/krawler /opt/krawler
 RUN cd /opt/krawler && yarn link && yarn link @kalisio/krawler
 
 # Install 7zip
-RUN apt-get update && apt-get -y install curl p7zip-full
+RUN apt-get update && apt-get -y install lftp p7zip-full
 
 # Install mapshaper
 RUN npm install -g mapshaper

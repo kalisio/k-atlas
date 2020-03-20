@@ -3,13 +3,13 @@
 ARCHIVE=$1
 
 # donwload the archive
-curl --insecure ftp://Admin_Express_ext:Dahnoh0eigheeFok@ftp3.ign.fr/$ARCHIVE --output $ARCHIVE
+lftp -u Admin_Express_ext,Dahnoh0eigheeFok ftp3.ign.fr -e "get $ARCHIVE; bye"
 
 # extract the archive
-7z x $ARCHIVE
+7z x $ARCHIVE -oadmin-express
 
 # find the shape files
-SHAPES=`find . -name *.shp`
+SHAPES=`find admin-express -name *.shp`
 for SHAPE in $SHAPES; do
   echo processing $SHAPE
   SHAPE_PATH=`dirname "${SHAPE}"`
