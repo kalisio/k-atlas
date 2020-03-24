@@ -27,7 +27,7 @@ let generateTasks = (options) => {
       let task = {
         id: _.kebabCase(path.parse(file).name),
         key: key,
-        collection: 'france-' + _.kebabCase(path.parse(file).name) + 's'
+        collection: 'france-' + _.kebabCase(path.parse(file).name)
       }
       console.log('creating task for ' + file)
       tasks.push(task)  
