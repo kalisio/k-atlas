@@ -8,6 +8,7 @@ const getStoreFromHook = krawler.utils.getStoreFromHook
 const hooks = krawler.hooks
 
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/atlas'
+const s3Path = process.env.S3_PATH || 'data/IGN/Admin-Express'
 
 const archive = 'ADMIN-EXPRESS_2-2__SHP__FRA_WM_2020-02-24.7z.001'
 const user = 'Admin_Express_ext'
@@ -24,8 +25,9 @@ let generateTasks = (options) => {
     files.forEach(file => {
       const key = _.replace(path.normalize(file), path.normalize(store.path), '.')
       let task = {
-        id: 'france-' + _.kebabCase(path.parse(file).name),
-        key: key
+        id: _.kebabCase(path.parse(file).name),
+        key: key,
+        collection: 'france-' + _.kebabCase(path.parse(file).name) + 's'
       }
       console.log('creating task for ' + file)
       tasks.push(task)  
@@ -61,11 +63,15 @@ module.exports = {
             })
           }
         },
+        writeJson: {
+          store: 's3',
+          key: path.posix.join(s3Path, '<%= collection %>.geojson')
+        },
         dropMongoCollection: {
-          collection: '<%= id %>'
+          collection: '<%= collection %>'
         },
         createMongoCollection: {
-          collection: '<%= id %>',
+          collection: '<%= collection %>',
           indices: [
             { geometry: '2dsphere' }
           ]
@@ -83,6 +89,17 @@ module.exports = {
           id: 'fs',
           options: {
             path: path.join(__dirname, 'admin-express')
+          }, 
+        },
+        {
+          id: 's3',
+          type: 's3',
+          options: {
+            client: {
+              accessKeyId: process.env.S3_ACCESS_KEY,
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
+            },
+            bucket: process.env.S3_BUCKET
           }
         }],
         connectMongo: {
@@ -99,13 +116,13 @@ module.exports = {
         disconnectMongo: {
           clientPath: 'taskTemplate.client'
         },
-        removeStores: ['fs']
+        removeStores: ['fs', 's3']
       },
       error: {
         disconnectMongo: {
           clientPath: 'taskTemplate.client'
         },
-        removeStores: ['fs']
+        removeStores: ['fs', 's3']
       }
     }
   }
