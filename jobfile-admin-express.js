@@ -63,10 +63,6 @@ module.exports = {
             })
           }
         },
-        writeJson: {
-          store: 's3',
-          key: path.posix.join(s3Path, '<%= collection %>.geojson')
-        },
         dropMongoCollection: {
           collection: '<%= collection %>'
         },
@@ -78,7 +74,11 @@ module.exports = {
         },
         writeMongoCollection: {
           chunkSize: 256,
-          collection: '<%= id %>',
+          collection: '<%= collection %>',
+        },
+        writeJson: {
+          store: 's3',
+          key: path.posix.join(s3Path, '<%= collection %>.geojson')
         },
         clearData: {}
       }
@@ -107,9 +107,9 @@ module.exports = {
           // Required so that client is forwarded from job to tasks
           clientPath: 'taskTemplate.client'
         },
-        runCommand: {
+        /*runCommand: {
           command: './admin-express.sh ' + archive + ' ' + host + ' ' + user + ' ' + passwd
-        },
+        },*/
         generateTasks: {}
       },
       after: {
