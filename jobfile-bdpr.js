@@ -8,18 +8,18 @@ const getStoreFromHook = krawler.utils.getStoreFromHook
 const hooks = krawler.hooks
 
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/atlas'
-const s3Path = process.env.S3_PATH || 'data/IGN/Admin-Express'
+const s3Path = process.env.S3_PATH || 'data/IGN/BDPR'
 
-const archive = 'ADMIN-EXPRESS_2-3__SHP__FRA_WM_2020-03-16.7z.001'
-const user = 'Admin_Express_ext'
-const passwd = 'Dahnoh0eigheeFok'
+const archive = 'BDPR_1-0_SHP_LAMB93_FXX_2018-07-31.7z.001'
+const user = 'BDPR_ext'
+const passwd = 'be3aadoVozohghie'
 const host = 'ftp3.ign.fr'
 
 let generateTasks = (options) => {
   return async (hook) => {
     let tasks = []
     
-    const store = await getStoreFromHook(hook,'generateTasks')
+    const store = await getStoreFromHook(hook, 'generateTasks')
     const pattern = path.join(store.path, '**/*.geojson')
     const files = glob.sync(pattern)
     files.forEach(file => {
@@ -27,7 +27,7 @@ let generateTasks = (options) => {
       let task = {
         id: _.kebabCase(path.parse(file).name),
         key: key,
-        collection: 'admin-express-' + _.kebabCase(path.parse(file).name)
+        collection: 'bdpr-' + _.kebabCase(path.parse(file).name)
       }
       console.log('creating task for ' + file)
       tasks.push(task)  
@@ -39,7 +39,7 @@ let generateTasks = (options) => {
 hooks.registerHook('generateTasks', generateTasks)
 
 module.exports = {
-  id: 'admin-express',
+  id: 'bdpr',
   store: 'fs',
   options: {
     workersLimit: 1
@@ -53,15 +53,6 @@ module.exports = {
       after: {
         readJson: {
           key: '<%= key %>'
-        },
-        apply: {
-          function: (item) => {
-            _.forEach(item.data.features, (feature) => {
-              if (feature.geometry !== 'Point') {
-                feature['centroid'] = turf.centroid(feature.geometry).geometry
-              }
-            })
-          }
         },
         dropMongoCollection: {
           collection: '<%= collection %>'

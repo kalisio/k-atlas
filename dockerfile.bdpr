@@ -22,7 +22,7 @@ RUN apt-get update && apt-get -y install lftp p7zip-full
 RUN npm install -g mapshaper
 
 # Install the job
-COPY jobfile-admin-express.js .
+COPY jobfile-bdpr.js .
 COPY geoservices.sh .
 RUN chmod +x geoservices.sh
 
@@ -31,4 +31,4 @@ HEALTHCHECK --interval=1m --timeout=10s --start-period=1m CMD node /opt/krawler/
 
 # Run the job
 ENV NODE_PATH=/opt/krawler/node_modules
-CMD node /opt/krawler --run --cron "0 0 4 1 * *" jobfile-admin-express.js
+CMD node /opt/krawler --run --cron "0 0 4 1 * *" jobfile-bdpr.js
