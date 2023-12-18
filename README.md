@@ -1,6 +1,10 @@
 # k-atlas
 
-A Krawler based service to scrape various data related to administrative entities
+Krawler based jobs to scrape various data related to administrative entities.
+
+## OSM boundaries
+
+This job relies on [osmium](https://osmcode.org/osmium-tool/) to extract administrative boundaries at different level from OSM pbf files.
 
 ## Admin-Express
 

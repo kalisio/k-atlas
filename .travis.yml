@@ -13,6 +13,7 @@ notifications:
     on_failure: always
 
 env:
+  - JOB=osm-boundaries
   - JOB=admin-express
   - JOB=bdpr
 
