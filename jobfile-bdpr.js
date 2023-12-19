@@ -1,14 +1,12 @@
+import _ from 'lodash'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { sync } from 'glob'
+import { utils, hooks } from '@kalisio/krawler'
 
-const _ = require('lodash')
-const path = require('path')
-const glob = require('glob')
-const turf = require('@turf/turf')
-const krawler = require('@kalisio/krawler')
-const getStoreFromHook = krawler.utils.getStoreFromHook
-const hooks = krawler.hooks
-
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/atlas'
-const s3Path = process.env.S3_PATH || 'data/IGN/BDPR'
+const storePath = process.env.STORE_PATH || 'data/IGN/BDPR'
 
 const archive = 'BDPR_1-0_SHP_LAMB93_FXX_2018-07-31.7z.001'
 const user = 'BDPR_ext'
@@ -19,9 +17,9 @@ let generateTasks = (options) => {
   return async (hook) => {
     let tasks = []
     
-    const store = await getStoreFromHook(hook, 'generateTasks')
+    const store = await utils.getStoreFromHook(hook, 'generateTasks')
     const pattern = path.join(store.path, '**/*.geojson')
-    const files = glob.sync(pattern)
+    const files = sync(pattern)
     files.forEach(file => {
       const key = _.replace(path.normalize(file), path.normalize(store.path), '.')
       let task = {
@@ -38,7 +36,7 @@ let generateTasks = (options) => {
 }
 hooks.registerHook('generateTasks', generateTasks)
 
-module.exports = {
+export default {
   id: 'bdpr',
   store: 'fs',
   options: {
@@ -69,7 +67,7 @@ module.exports = {
         },
         writeJson: {
           store: 's3',
-          key: path.posix.join(s3Path, '<%= collection %>.geojson')
+          key: path.posix.join(storePath, '<%= collection %>.geojson')
         },
         clearData: {}
       }
@@ -79,7 +77,7 @@ module.exports = {
         createStores: [{
           id: 'fs',
           options: {
-            path: path.join(__dirname, 'admin-express')
+            path: path.join(__dirname, 'bdpr')
           }, 
         },
         {
@@ -88,7 +86,8 @@ module.exports = {
           options: {
             client: {
               accessKeyId: process.env.S3_ACCESS_KEY,
-              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+              endpoint: process.env.S3_ENDPOINT
             },
             bucket: process.env.S3_BUCKET
           }

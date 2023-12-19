@@ -32,10 +32,11 @@
     "postversion": "git push origin HEAD --tags"
   },
   "dependencies": {
+    "@turf/centroid": "^6.5.0",
+    "glob": "^10.3.10",
     "lodash": "^4.17.15"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "peerDependencies": {
     "@kalisio/krawler": "2.5.0"
   }
