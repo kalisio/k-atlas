@@ -9,10 +9,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/atlas'
 const storePath = process.env.STORE_PATH || 'data/IGN/Admin-Express'
 
-const archive = 'ADMIN-EXPRESS_2-3__SHP__FRA_WM_2020-03-16.7z.001'
-const user = 'Admin_Express_ext'
-const passwd = 'Dahnoh0eigheeFok'
-const host = 'ftp3.ign.fr'
+// Geoplatform download service URL
+const url = 'https://data.geopf.fr/telechargement/download/ADMIN-EXPRESS-COG-CARTO/ADMIN-EXPRESS-COG-CARTO_3-2__SHP_WGS84G_FRA_2023-05-03/ADMIN-EXPRESS-COG-CARTO_3-2__SHP_WGS84G_FRA_2023-05-03.7z'
 
 let generateTasks = (options) => {
   return async (hook) => {
@@ -74,10 +72,11 @@ export default {
         writeMongoCollection: {
           chunkSize: 256,
           collection: '<%= collection %>',
+          ordered: false
         },
         writeJson: {
           store: 's3',
-          key: path.posix.join(storePath, '<%= collection %>.geojson')
+          key: path.posix.join(storePath, `<%= collection.replace('admin-express-', '') %>.geojson`)
         },
         clearData: {}
       }
@@ -108,7 +107,7 @@ export default {
           clientPath: 'taskTemplate.client'
         },
         runCommand: {
-          command: './geoservices.sh ' + archive + ' ' + host + ' ' + user + ' ' + passwd
+          command: './geoservices.sh ' + url + ' admin-express'
         },
         generateTasks: {}
       },

@@ -8,10 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/atlas'
 const storePath = process.env.STORE_PATH || 'data/IGN/BDPR'
 
-const archive = 'BDPR_1-0_SHP_LAMB93_FXX_2018-07-31.7z.001'
-const user = 'BDPR_ext'
-const passwd = 'be3aadoVozohghie'
-const host = 'ftp3.ign.fr'
+// FIXME: download URL from IGN website does not work with wget and cannot found a new one on geoplatform
+const url = 'https://wxs.ign.fr/kpm72ua4hed0u26lqtymrem2/telechargement/prepackage/BDPR_PACK_DIFF_01-2018$BDPR_1-0_SHP_LAMB93_FXX_2018-07-31/file/BDPR_1-0_SHP_LAMB93_FXX_2018-07-31.7z'
 
 let generateTasks = (options) => {
   return async (hook) => {
@@ -67,7 +65,7 @@ export default {
         },
         writeJson: {
           store: 's3',
-          key: path.posix.join(storePath, '<%= collection %>.geojson')
+          key: path.posix.join(storePath, `<%= collection.replace('bdpr-', '') %>.geojson`)
         },
         clearData: {}
       }
@@ -98,7 +96,7 @@ export default {
           clientPath: 'taskTemplate.client'
         },
         runCommand: {
-          command: './geoservices.sh ' + archive + ' ' + host + ' ' + user + ' ' + passwd
+          command: './geoservices.sh ' + url + ' bdpr'
         },
         generateTasks: {}
       },

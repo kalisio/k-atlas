@@ -4,31 +4,27 @@ ARG KRAWLER_TAG
 # Make a Krawler image alias to be able to take into account the KRAWLER_TAG argument
 #
 FROM kalisio/krawler:${KRAWLER_TAG} AS krawler
-
-#
-# Make the job image using the krawler image alias
-#
-FROM node:12-buster-slim
 LABEL maintainer="Kalisio <contact@kalisio.xyz>"
 
-# Copy Krawler from the Krawler image alias
-COPY --from=krawler /opt/krawler /opt/krawler
-RUN cd /opt/krawler && yarn link && yarn link @kalisio/krawler
+# Default environment variables
+ENV CRON="0 0 4 1 * *"
 
-# Install 7zip
-RUN apt-get update && apt-get -y install lftp p7zip-full
+USER root
 
-# Install mapshaper
+# Install wget, 7z, mapshaper
+RUN apt-get update && apt-get -y install wget p7zip-full
 RUN npm install -g mapshaper
 
-# Install the job
-COPY jobfile-admin-express.js .
-COPY geoservices.sh .
+USER node
+
+# Copy the job and install the dependencies
+COPY --chown=node:node jobfile-admin-express.js geoservices.sh package.json yarn.lock /opt/job/
+WORKDIR /opt/job
 RUN chmod +x geoservices.sh
+RUN yarn && yarn link @kalisio/krawler && yarn cache clean
 
 # Add default healthcheck
 HEALTHCHECK --interval=1m --timeout=10s --start-period=1m CMD node /opt/krawler/healthcheck.js
 
 # Run the job
-ENV NODE_PATH=/opt/krawler/node_modules
-CMD node /opt/krawler --run --cron "0 0 4 1 * *" jobfile-admin-express.js
+CMD krawler --cron "$CRON" --run jobfile-admin-express.js

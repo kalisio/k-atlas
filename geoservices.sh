@@ -1,22 +1,22 @@
-#/!bin/sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-ARCHIVE=$1
-HOST=$2
-USER=$3
-PASS=$4
+URL=$1
+OUTPUT_DIRECTORY=$2
 
 # donwload the archive
-# note: wget stuck in passive mode and curl is really slow 
-echo "<> downloading $ARCHIVE from $HOST" 
-lftp -u $USER,$PASS $HOST -e "get $ARCHIVE; bye"
+echo "<> downloading from $URL"
+wget $URL
+
+ARCHIVE=`basename $URL`
 
 # extract the archive
 echo "<> extracting $ARCHIVE"
-rm -fr dataset
-7z x $ARCHIVE -odataset
+rm -fr $OUTPUT_DIRECTORY
+7z x $ARCHIVE -o$OUTPUT_DIRECTORY
 
 # find the shape files
-SHAPES=`find dataset -name *.shp`
+SHAPES=`find $OUTPUT_DIRECTORY -name *.shp`
 
 # iterate though the files and convert them using mapshaper
 echo "<> converting files"
@@ -28,7 +28,7 @@ for SHAPE in $SHAPES; do
   JSON_BASENAME=`echo $SHAPE_BASENAME | sed -e 's/.shp/.geojson/g'` # cannot use variable substitution as we are running in shell not bash
   echo converting $SHAPE_BASENAME in $JSON_BASENAME
   cd $SHAPE_PATH
-  mapshaper -i $SHAPE_BASENAME -o format=geojson precision=0.000001 $JSON_BASENAME
+  mapshaper -i $SHAPE_BASENAME -proj wgs84 -o format=geojson precision=0.000001 $JSON_BASENAME
   cd $WORKDIR
 done
 
