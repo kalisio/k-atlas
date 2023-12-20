@@ -1,0 +1,30 @@
+ARG KRAWLER_TAG
+
+# 
+# Make a Krawler image alias to be able to take into account the KRAWLER_TAG argument
+#
+FROM kalisio/krawler:${KRAWLER_TAG} AS krawler
+LABEL maintainer="Kalisio <contact@kalisio.xyz>"
+
+# Default environment variables
+ENV CRON="0 0 4 1 * *"
+
+USER root
+
+# Install wget, 7z, mapshaper
+RUN apt-get update && apt-get -y install wget p7zip-full
+RUN npm install -g mapshaper
+
+USER node
+
+# Copy the job and install the dependencies
+COPY --chown=node:node jobfile-osm-boundaries.js geoservices.sh package.json yarn.lock /opt/job/
+WORKDIR /opt/job
+RUN chmod +x geoservices.sh
+RUN yarn && yarn link @kalisio/krawler && yarn cache clean
+
+# Add default healthcheck
+HEALTHCHECK --interval=1m --timeout=10s --start-period=1m CMD node /opt/krawler/healthcheck.js
+
+# Run the job
+CMD krawler --cron "$CRON" --run jobfile-osm-boundaries.js
