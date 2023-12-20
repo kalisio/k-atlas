@@ -11,16 +11,22 @@ ENV CRON="0 0 4 1 * *"
 
 USER root
 
-# Install wget, 7z, mapshaper
-RUN apt-get update && apt-get -y install wget p7zip-full
-RUN npm install -g mapshaper
+# Install osmium
+RUN apt-get update && apt-get -y install libprotozero-dev rapidjson-dev libboost-program-options-dev libbz2-dev zlib1g-dev liblz4-dev libexpat1-dev cmake build-essential pandoc git
+WORKDIR /opt
+RUN git clone https://github.com/osmcode/libosmium
+WORKDIR /opt/libosmium/build
+RUN cmake .. && make && make install
+WORKDIR /opt
+RUN git clone https://github.com/osmcode/osmium-tool.git
+WORKDIR /opt/osmium-tool/build
+RUN cmake .. && make && make install
 
 USER node
 
 # Copy the job and install the dependencies
-COPY --chown=node:node jobfile-osm-boundaries.js geoservices.sh package.json yarn.lock /opt/job/
+COPY --chown=node:node jobfile-osm-boundaries.js package.json yarn.lock /opt/job/
 WORKDIR /opt/job
-RUN chmod +x geoservices.sh
 RUN yarn && yarn link @kalisio/krawler && yarn cache clean
 
 # Add default healthcheck

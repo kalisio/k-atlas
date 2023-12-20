@@ -8,25 +8,36 @@ const storePath = process.env.STORE_PATH || 'data/OSM'
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
 const files = ['https://download.geofabrik.de/europe/albania-latest.osm.pbf']
-const level = process.env.LEVEL || 2
+const minLevel = process.env.MIN_LEVEL || 2
+const maxLevel = process.env.MAX_LEVEL || 4
 const collection = 'osm-boundaries'
 
 let generateTasks = (options) => {
   return async (hook) => {
     let tasks = []
-    files.forEach(file => {
-      const id = `osm-boundaries/${level}/${path.basename(file)}`
-      let task = {
-        id,
-        key: id.replace('-latest.osm.pbf', ''),
-        type: 'http',
-        options: {
-          url: file
+    for (let level = minLevel; level <= maxLevel; level++) {
+      files.forEach(file => {
+        const basename = path.basename(file).replace('-latest.osm.pbf', '')
+        const id = `osm-boundaries/${basename}.pbf`
+        const key = `osm-boundaries/${level}/${basename}`
+        const dir = path.dirname(key)
+        let task = {
+          id,
+          key,
+          dir,
+          basename,
+          level,
+          type: 'http',
+          // Skip download if file already exists
+          overwrite: false,
+          options: {
+            url: file
+          }
         }
-      }
-      console.log('Creating task for ' + file)
-      tasks.push(task)  
-    })
+        console.log(`Creating task for ${task.key} at level ${level}`)
+        tasks.push(task)  
+      })
+    }
     hook.data.tasks = tasks
     return hook
   }
@@ -45,28 +56,32 @@ export default {
   hooks: {
     tasks: {
       after: {
-        extractAdministrative: {
+        filterAdministrative: {
           hook: 'runCommand',
-          command: `osmium tags-filter <%= id %> /boundary=administrative -t --overwrite --output <%= key %>-administrative.pbf`
+          command: `osmium tags-filter <%= id %> /boundary=administrative -t --overwrite --output <%= id.replace('.pbf', '-administrative.pbf') %>`
         },
-        filterLevelAdministrative: {
+        createLevelFolder: {
           hook: 'runCommand',
-          command: `osmium tags-filter <%= id %> /admin_level=${level} -t --overwrite --output <%= key %>-administrative-${level}.pbf`
+          command: `mkdir -p <%= dir %>`
         },
-        exportGEOjson: {
+        filterLevel: {
           hook: 'runCommand',
-          command: `osmium export -f json <%= key %>-administrative-${level}.pbf --geometry-types=polygon --overwrite -o <%= key %>-administrative-${level}.geojson`
+          command: `osmium tags-filter <%= id.replace('.pbf', '-administrative.pbf') %> /admin_level=<%= level %> -t --overwrite --output <%= key %>.pbf`
+        },
+        extract: {
+          hook: 'runCommand',
+          command: `osmium export -f json <%= key %>.pbf --geometry-types=polygon --overwrite -o <%= key %>.geojson`
         },
         readJson: {
-          key: `<%= key %>-administrative-${level}.geojson`
+          key: `<%= key %>.geojson`
         },
         writeMongoCollection: {
           chunkSize: 256,
           collection,
         },
         /*copyToStore: {
-          input: { key: `<%= key %>-administrative-${level}.geojson`, store: 'fs' },
-          output: { key: `${storePath}/<%= key %>-${level}.geojson`, store: 's3',
+          input: { key: `<%= key %>.geojson`, store: 'fs' },
+          output: { key: `${storePath}/<%= key %>.geojson`, store: 's3',
             params: { ContentType: 'application/geo+json' }
           }
         },*/
@@ -97,6 +112,17 @@ export default {
           url: dbUrl,
           // Required so that client is forwarded from job to tasks
           clientPath: 'taskTemplate.client'
+        },
+        dropMongoCollection: {
+          collection,
+          clientPath: 'taskTemplate.client'
+        },
+        createMongoCollection: {
+          collection,
+          clientPath: 'taskTemplate.client',
+          indices: [
+            { geometry: '2dsphere' }
+          ]
         },
         generateTasks: {}
       },
