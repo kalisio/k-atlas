@@ -5,14 +5,17 @@ import { hooks } from '@kalisio/krawler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const storePath = process.env.STORE_PATH || 'data/OSM'
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
 const files = ['https://download.geofabrik.de/europe/albania-latest.osm.pbf']
+const level = process.env.LEVEL || 2
+const collection = 'osm-boundaries'
 
 let generateTasks = (options) => {
   return async (hook) => {
     let tasks = []
     files.forEach(file => {
-      const id = `osm-boundaries/${path.basename(file)}`
+      const id = `osm-boundaries/${level}/${path.basename(file)}`
       let task = {
         id,
         key: id.replace('-latest.osm.pbf', ''),
@@ -37,7 +40,7 @@ export default {
     workersLimit: 1
   },
   taskTemplate: {
-    store: 'fs'
+    store: ''
   },
   hooks: {
     tasks: {
@@ -46,9 +49,24 @@ export default {
           hook: 'runCommand',
           command: `osmium tags-filter <%= id %> /boundary=administrative -t --overwrite --output <%= key %>-administrative.pbf`
         },
+        filterLevelAdministrative: {
+          hook: 'runCommand',
+          command: `osmium tags-filter <%= id %> /admin_level=${level} -t --overwrite --output <%= key %>-administrative-${level}.pbf`
+        },
+        exportGEOjson: {
+          hook: 'runCommand',
+          command: `osmium export -f json <%= key %>-administrative-${level}.pbf --geometry-types=polygon --overwrite -o <%= key %>-administrative-${level}.geojson`
+        },
+        readJson: {
+          key: `<%= key %>-administrative-${level}.geojson`
+        },
+        writeMongoCollection: {
+          chunkSize: 256,
+          collection,
+        },
         /*copyToStore: {
-          input: { key: '<%= key %>.geojson', store: 'fs' },
-          output: { key: `${storePath}/<%= key %>.geojson`, store: 's3',
+          input: { key: `<%= key %>-administrative-${level}.geojson`, store: 'fs' },
+          output: { key: `${storePath}/<%= key %>-${level}.geojson`, store: 's3',
             params: { ContentType: 'application/geo+json' }
           }
         },*/
@@ -75,12 +93,23 @@ export default {
             bucket: process.env.S3_BUCKET
           }
         }],
+        connectMongo: {
+          url: dbUrl,
+          // Required so that client is forwarded from job to tasks
+          clientPath: 'taskTemplate.client'
+        },
         generateTasks: {}
       },
       after: {
+        disconnectMongo: {
+          clientPath: 'taskTemplate.client'
+        },
         removeStores: ['fs', 's3']
       },
       error: {
+        disconnectMocdngo: {
+          clientPath: 'taskTemplate.client'
+        },
         removeStores: ['fs', 's3']
       }
     }
