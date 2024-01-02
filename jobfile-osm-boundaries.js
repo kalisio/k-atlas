@@ -7,9 +7,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const storePath = process.env.STORE_PATH || 'data/OSM'
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
-const files = ['https://download.geofabrik.de/europe/albania-latest.osm.pbf']
+const files = ['https://download.geofabrik.de/europe/ukraine-latest.osm.pbf', 'https://download.geofabrik.de/asia/china-latest.osm.pbf']
 const minLevel = process.env.MIN_LEVEL || 2
-const maxLevel = process.env.MAX_LEVEL || 4
+const maxLevel = process.env.MAX_LEVEL || 8
 const collection = 'osm-boundaries'
 
 let generateTasks = (options) => {
@@ -133,7 +133,7 @@ export default {
         removeStores: ['fs', 's3']
       },
       error: {
-        disconnectMocdngo: {
+        disconnectMongo: {
           clientPath: 'taskTemplate.client'
         },
         removeStores: ['fs', 's3']
