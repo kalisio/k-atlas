@@ -68,9 +68,13 @@ export default {
           hook: 'runCommand',
           command: `osmium tags-filter <%= id.replace('.pbf', '-administrative.pbf') %> /admin_level=<%= level %> -t --overwrite --output <%= key %>.pbf`
         },
+        filterName: {
+          hook: 'runCommand',
+          command: `osmium tags-filter <%= key %>.pbf name -t --overwrite --output <%= key %>-name.pbf`
+        },
         extract: {
           hook: 'runCommand',
-          command: `osmium export -f json <%= key %>.pbf --geometry-types=polygon --overwrite -o <%= key %>.geojson`
+          command: `osmium export -f json <%= key %>-name.pbf --geometry-types=polygon --overwrite -o <%= key %>.geojson`
         },
         readJson: {
           key: `<%= key %>.geojson`
