@@ -82,6 +82,7 @@ export default {
         writeMongoCollection: {
           chunkSize: 256,
           collection,
+          checkKeys: false
         },
         /*copyToStore: {
           input: { key: `<%= key %>.geojson`, store: 'fs' },
