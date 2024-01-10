@@ -1,13 +1,16 @@
 import _ from 'lodash'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import centroid from '@turf/centroid'
 import { hooks } from '@kalisio/krawler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const storePath = process.env.STORE_PATH || 'data/OSM'
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
-const files = ['https://download.geofabrik.de/europe-latest.osm.pbf']
+const baseUrl = 'https://download.geofabrik.de'
+const regions = process.env.REGIONS || 'europe/france;europe/albania'
+const fabrikSuffix = '-latest.osm.pbf'
 const minLevel = process.env.MIN_LEVEL || 2
 const maxLevel = process.env.MAX_LEVEL || 8
 const collection = 'osm-boundaries'
@@ -16,8 +19,8 @@ let generateTasks = (options) => {
   return async (hook) => {
     let tasks = []
     for (let level = minLevel; level <= maxLevel; level++) {
-      files.forEach(file => {
-        const basename = path.basename(file).replace('-latest.osm.pbf', '')
+      _.forEach(regions.split(';'), region => {
+        const basename = path.basename(region)
         const id = `osm-boundaries/${basename}.pbf`
         const key = `osm-boundaries/${level}/${basename}`
         const dir = path.dirname(key)
@@ -31,10 +34,10 @@ let generateTasks = (options) => {
           // Skip download if file already exists
           overwrite: false,
           options: {
-            url: file
+            url: `${baseUrl}/${region}${fabrikSuffix}`
           }
         }
-        console.log(`Creating task for ${task.key} at level ${level}`)
+        console.log(`<i> creating task for ${task.key} at level ${level} [${task.options.url}]`)
         tasks.push(task)  
       })
     }
@@ -78,6 +81,26 @@ export default {
         },
         readJson: {
           key: `<%= key %>.geojson`
+        },
+        generateToponyms: {
+          hook: 'apply',
+          function: (item) => {
+            let toponyms = []
+            _.forEach(item.data.features, feature => {
+              const toponym = centroid(feature.geometry)
+              toponym.properties = feature.properties
+              toponyms.push(toponym)
+            })
+            item.toponyms = {
+              type: 'FeatureCollection',
+              features: toponyms
+            }
+          }
+        },
+        writeToponyms: {
+          hook: 'writeJson',
+          dataPath: 'data.toponyms',
+          key: `<%= key %>-toponyms.geojson`
         },
         writeMongoCollection: {
           chunkSize: 256,
