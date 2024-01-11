@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@turf/centroid": "^6.5.0",
+    "@turf/center-of-mass": "^6.5.0",
     "glob": "^10.3.10",
     "lodash": "^4.17.15"
   },
