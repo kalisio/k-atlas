@@ -12,7 +12,7 @@ const baseUrl = 'https://download.geofabrik.de'
 const regions = process.env.REGIONS || 'europe/france'
 const fabrikSuffix = '-latest.osm.pbf'
 const minLevel = process.env.MIN_LEVEL || 2
-const maxLevel = process.env.MAX_LEVEL || 6
+const maxLevel = process.env.MAX_LEVEL || 8
 const collection = 'osm-boundaries'
 
 let generateTasks = (options) => {
@@ -87,8 +87,13 @@ export default {
           function: (item) => {
             let toponyms = []
             _.forEach(item.data.features, feature => {
-              const toponym = centerOfMass(feature.geometry)
-              toponym.properties = feature.properties
+              let toponym = centerOfMass(feature.geometry)
+              toponym.properties = {
+                name: feature.properties.name
+              }
+              if (_.has(feature, 'properties.name:en')) {
+                _.set(toponym, 'properties.name:en', feature.properties['name:en'])
+              }
               toponyms.push(toponym)
             })
             item.toponyms = {
