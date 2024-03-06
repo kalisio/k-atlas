@@ -1,0 +1,17 @@
+{
+    "attributes": {
+        "type":      true,
+        "id":        true,
+        "version":   false,
+        "changeset": false,
+        "timestamp": false,
+        "uid":       false,
+        "user":      false,
+        "way_nodes": false
+    },
+    "linear_tags":  true,
+    "area_tags":    true,
+    "exclude_tags": [],
+    "include_tags": [],
+    "print_record_separator": false
+}
