@@ -61,7 +61,7 @@ export default {
       after: {
         filterAdministrative: {
           hook: 'runCommand',
-          command: `osmium tags-filter <%= id %> /boundary=administrative --overwrite --output <%= id.replace('.pbf', '-administrative.pbf') %>`
+          command: `osmium tags-filter <%= id %> /boundary=administrative -t --overwrite --output <%= id.replace('.pbf', '-administrative.pbf') %>`
         },
         createLevelFolder: {
           hook: 'runCommand',
@@ -69,11 +69,11 @@ export default {
         },
         filterLevel: {
           hook: 'runCommand',
-          command: `osmium tags-filter <%= id.replace('.pbf', '-administrative.pbf') %> /admin_level=<%= level %> --overwrite --output <%= key %>.pbf`
+          command: `osmium tags-filter <%= id.replace('.pbf', '-administrative.pbf') %> /admin_level=<%= level %> -t --overwrite --output <%= key %>.pbf`
         },
         filterName: {
           hook: 'runCommand',
-          command: `osmium tags-filter <%= key %>.pbf name --overwrite --output <%= key %>-name.pbf`
+          command: `osmium tags-filter <%= key %>.pbf name -t --overwrite --output <%= key %>-name.pbf`
         },
         extract: {
           hook: 'runCommand',
