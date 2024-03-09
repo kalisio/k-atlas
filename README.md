@@ -10,10 +10,23 @@ This job relies on [osmium](https://osmcode.org/osmium-tool/) to extract adminis
 > [osmimum](https://osmcode.org/osmium-tool/) must be installed on your system. 
 
 To setup the regions to process, you must export the environment variables `REGIONS` with the [GeoFabrik](https://download.geofabrik.de/) regions. For instance:
-
 ```bash
 export REGIONS="europe/france;europe/albania"
 ```
+
+### Planet generation
+
+To generate the whole planet use continent extracts like this first to launch the `osm-boundaries` job from level 3 to 8:
+```bash
+export REGIONS="africa;asia;australia-oceania;central-america;europe;north-america;south-america"
+```
+
+As large files are generated for e.g. Europe you might have to increase the default NodeJS memory limit:
+```bash
+export NODE_OPTIONS=--max-old-space-size=8192
+```
+
+Then, launch the `osm-planet-boundaries` job for level 2, which uses a planet extract, and planet MBTiles generation. Indeed, country-level (i.e. administrative level 2) requires a whole planet file to avoid missing relation between continental and islands areas.
 
 ## Admin-Express
 

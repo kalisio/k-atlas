@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 import centerOfMass from '@turf/center-of-mass'
 import { hooks } from '@kalisio/krawler'
@@ -9,10 +10,12 @@ const storePath = process.env.STORE_PATH || 'data/OSM'
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
 const baseUrl = 'https://download.geofabrik.de'
+// Process whole world with 'africa;asia;australia-oceania;central-america;europe;north-america;south-america'
 const regions = process.env.REGIONS || 'europe/france'
 const fabrikSuffix = '-latest.osm.pbf'
-const minLevel = process.env.MIN_LEVEL || 2
-const maxLevel = process.env.MAX_LEVEL || 8
+// Level 2 = countries, it requires an additional job working with a planet extract not continent extracts
+const minLevel = Number(process.env.MIN_LEVEL) || 3
+const maxLevel = Number(process.env.MAX_LEVEL) || 8
 const collection = 'osm-boundaries'
 
 let generateTasks = (options) => {
@@ -37,7 +40,7 @@ let generateTasks = (options) => {
             url: `${baseUrl}/${region}${fabrikSuffix}`
           }
         }
-        console.log(`<i> creating task for ${task.key} at level ${level} [${task.options.url}]`)
+        console.log(`Creating task ${task.key}`)
         tasks.push(task)  
       })
     }
@@ -61,6 +64,7 @@ export default {
       after: {
         filterAdministrative: {
           hook: 'runCommand',
+          match: { predicate: (item) => !fs.existsSync(item.id.replace('.pbf', '-administrative.pbf')) },
           command: `osmium tags-filter <%= id %> /boundary=administrative -t --overwrite --output <%= id.replace('.pbf', '-administrative.pbf') %>`
         },
         createLevelFolder: {
@@ -69,24 +73,26 @@ export default {
         },
         filterLevel: {
           hook: 'runCommand',
+          match: { predicate: (item) => !fs.existsSync(item.key) },
           command: `osmium tags-filter <%= id.replace('.pbf', '-administrative.pbf') %> /admin_level=<%= level %> -t --overwrite --output <%= key %>.pbf`
-        },
-        filterName: {
-          hook: 'runCommand',
-          command: `osmium tags-filter <%= key %>.pbf name -t --overwrite --output <%= key %>-name.pbf`
         },
         extract: {
           hook: 'runCommand',
-          command: `osmium export -f json <%= key %>-name.pbf --geometry-types=polygon --overwrite -o <%= key %>-boundaries.geojson`
+          command: `osmium export -f jsonseq -x print_record_separator=false <%= key %>.pbf --geometry-types=polygon --overwrite -o <%= key %>-boundaries.geojsonseq`
         },
-        readJson: {
+        filter: {
+          hook: 'runCommand',
+          command: `cat <%= key %>-boundaries.geojsonseq | grep 'name' | grep 'wikidata' | grep 'admin_level' > <%= key %>-boundaries.geojson && rm -f <%= key %>-boundaries.geojsonseq`
+        },
+        readGeoJson: {
+          hook: 'readSequentialGeoJson',
           key: `<%= key %>-boundaries.geojson`
         },
         generateToponyms: {
           hook: 'apply',
           function: (item) => {
             let toponyms = []
-            _.forEach(item.data.features, feature => {
+            _.forEach(item.data, feature => {
               let toponym = centerOfMass(feature.geometry)
               toponym.properties = {
                 name: feature.properties.name
@@ -110,7 +116,14 @@ export default {
         writeMongoCollection: {
           chunkSize: 256,
           collection,
-          checkKeys: false
+          checkKeys: false,
+          ordered : false,
+          faultTolerant: true
+        },
+        // As we use geojson files to generate mbtiles we need to switch from sequential to standard GeoJSON
+        asFeatureCollection: {
+          hook: 'runCommand',
+          command: `sed -i '$!s/$/,/' <%= key %>-boundaries.geojson && sed -i '1i{ "type": "FeatureCollection", "features": [' <%= key %>-boundaries.geojson && echo ']}' >> <%= key %>-boundaries.geojson`
         },
         /*copyToStore: {
           input: { key: `<%= key %>.geojson`, store: 'fs' },
@@ -118,7 +131,11 @@ export default {
             params: { ContentType: 'application/geo+json' }
           }
         },*/
-        clearData: {}
+        clearData: {},
+        log: {
+          hook: 'apply',
+          function: (task) => console.log(`Terminating task ${task.key}`)
+        }
       }
     },
     jobs: {
@@ -154,7 +171,9 @@ export default {
           collection,
           clientPath: 'taskTemplate.client',
           indices: [
-            { geometry: '2dsphere' }
+            { geometry: '2dsphere' },
+            { 'properties.admin_level': 1 },
+            { geometry: '2dsphere', 'properties.admin_level': 1 },
           ]
         },
         generateTasks: {}
