@@ -2,6 +2,8 @@ import _ from 'lodash'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import area from '@turf/area'
+import flatten from '@turf/flatten'
 import centerOfMass from '@turf/center-of-mass'
 import { hooks } from '@kalisio/krawler'
 
@@ -11,11 +13,15 @@ const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
 const baseUrl = 'https://download.geofabrik.de'
 // Process whole world with 'africa;asia;australia-oceania;central-america;europe;north-america;south-america'
-const regions = process.env.REGIONS || 'europe/france'
+const regions = process.env.REGIONS || 'africa;asia;australia-oceania;central-america;europe;north-america;south-america'
 const fabrikSuffix = '-latest.osm.pbf'
 // Level 2 = countries, it requires an additional job working with a planet extract not continent extracts
 const minLevel = Number(process.env.MIN_LEVEL) || 3
 const maxLevel = Number(process.env.MAX_LEVEL) || 8
+// Simplification tolerance, defaults to 128m at level 2 => 2m at level 8
+const tolerance = process.env.SIMPLIFICATION_TOLERANCE ? Number(process.env.SIMPLIFICATION_TOLERANCE) : 128
+const simplificationAlgorithm = process.env.SIMPLIFICATION_ALGORITHM || 'dp' // could be 'visvalingam'
+const simplify = !_.isNil(tolerance)
 const collection = 'osm-boundaries'
 
 let generateTasks = (options) => {
@@ -39,6 +45,10 @@ let generateTasks = (options) => {
           options: {
             url: `${baseUrl}/${region}${fabrikSuffix}`
           }
+        }
+        if (tolerance) {
+          // Full tolerance at level 2, then divide by 2 at each level
+          Object.assign(task, { tolerance: tolerance / Math.pow(2, level - 2) })
         }
         console.log(`Creating task ${task.key}`)
         tasks.push(task)  
@@ -84,23 +94,57 @@ export default {
           hook: 'runCommand',
           command: `cat <%= key %>-boundaries.geojsonseq | grep 'name' | grep 'wikidata' | grep 'admin_level' > <%= key %>-boundaries.geojson && rm -f <%= key %>-boundaries.geojsonseq`
         },
+        // As we use mapshaper to simplify we need to switch from sequential to standard GeoJSON
+        asFeatureCollection: {
+          hook: 'runCommand',
+          match: { predicate: (item) => simplify },
+          command: `sed -i '$!s/$/,/' <%= key %>-boundaries.geojson && sed -i '1i{ "type": "FeatureCollection", "features": [' <%= key %>-boundaries.geojson && echo ']}' >> <%= key %>-boundaries.geojson`
+        },
+        simplify: {
+          hook: 'runCommand',
+          match: { predicate: (item) => simplify },
+          command: `mapshaper <%= key %>-boundaries.geojson -simplify ${simplificationAlgorithm} interval=<%= tolerance %> keep-shapes -o force <%= key %>-boundaries.geojson`
+        },
+        // Get back to sequential GeoJSON to ease reading large files
+        asSequence: {
+          hook: 'runCommand',
+          match: { predicate: (item) => simplify },
+          command: `ogr2ogr -f GeoJSONSeq <%= key %>-boundaries.geojsonseq <%= key %>-boundaries.geojson`
+        },
         readGeoJson: {
           hook: 'readSequentialGeoJson',
-          key: `<%= key %>-boundaries.geojson`
+          key: `<%= key %>-boundaries.geojsonseq`,
+          transform: {
+            unitMapping: {
+              'properties.admin_level': { asNumber: true }
+            }
+          }
         },
         generateToponyms: {
           hook: 'apply',
           function: (item) => {
             let toponyms = []
-            _.forEach(item.data, feature => {
-              let toponym = centerOfMass(feature.geometry)
-              toponym.properties = {
-                name: feature.properties.name
-              }
-              if (_.has(feature, 'properties.name:en')) {
-                _.set(toponym, 'properties.name:en', feature.properties['name:en'])
-              }
-              toponyms.push(toponym)
+            const features = item.data
+            _.forEach(features, feature => {
+              if (!_.get(feature, 'geometry') || !_.get(feature, 'properties.name')) return
+              // If multiple geometry keep the largest one only
+              const subfeatures = flatten(feature)
+              let toponym
+              let largestArea = 0
+              _.forEach(subfeatures.features, subfeature => {
+                const subfeatureArea = area(subfeature)
+                if (subfeatureArea > largestArea) {
+                  largestArea = subfeatureArea
+                  toponym = centerOfMass(subfeature.geometry)
+                  toponym.properties = {
+                    name: feature.properties.name
+                  }
+                  if (_.has(feature, 'properties.name:en')) {
+                    _.set(toponym, 'properties.name:en', feature.properties['name:en'])
+                  }
+                }
+              })
+              if (toponym) toponyms.push(toponym)
             })
             item.toponyms = {
               type: 'FeatureCollection',
@@ -119,11 +163,6 @@ export default {
           checkKeys: false,
           ordered : false,
           faultTolerant: true
-        },
-        // As we use geojson files to generate mbtiles we need to switch from sequential to standard GeoJSON
-        asFeatureCollection: {
-          hook: 'runCommand',
-          command: `sed -i '$!s/$/,/' <%= key %>-boundaries.geojson && sed -i '1i{ "type": "FeatureCollection", "features": [' <%= key %>-boundaries.geojson && echo ']}' >> <%= key %>-boundaries.geojson`
         },
         /*copyToStore: {
           input: { key: `<%= key %>.geojson`, store: 'fs' },

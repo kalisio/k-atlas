@@ -21,6 +21,13 @@ WORKDIR /opt
 RUN git clone https://github.com/osmcode/osmium-tool.git
 WORKDIR /opt/osmium-tool/build
 RUN cmake .. && make && make install
+# Install mapshaper
+RUN npm install -g mapshaper
+# Install tippecanoe
+RUN git clone https://github.com/felt/tippecanoe.git
+RUN cd tippecanoe
+RUN make -j
+RUN make install
 
 USER node
 
