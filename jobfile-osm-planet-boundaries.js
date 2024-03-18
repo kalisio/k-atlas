@@ -12,7 +12,7 @@ delete job.hooks.jobs.before.dropMongoCollection
 delete job.hooks.jobs.before.generateTasks
 job.hooks.tasks.after = hooks.insertHookAfter('clearData', job.hooks.tasks.after, 'mbtiles', {
   hook: 'runCommand',
-  command: `tippecanoe -o osm-boundaries/osm-boundaries.mbtiles -Llevel2:<(cat osm-boundaries/2/*-boundaries.geojson) -Llevel3:<(cat osm-boundaries/3/*-boundaries.geojson) -Llevel4:<(cat osm-boundaries/4/*-boundaries.geojson)\
+  command: `tippecanoe -r1 -o osm-boundaries/osm-boundaries.mbtiles -Llevel2:<(cat osm-boundaries/2/*-boundaries.geojson) -Llevel3:<(cat osm-boundaries/3/*-boundaries.geojson) -Llevel4:<(cat osm-boundaries/4/*-boundaries.geojson)\
     -Llevel5:<(cat osm-boundaries/5/*-boundaries.geojson) -Llevel6:<(cat osm-boundaries/6/*-boundaries.geojson) -Llevel7:<(cat osm-boundaries/7/*-boundaries.geojson) -Llevel8:<(cat osm-boundaries/8/*-boundaries.geojson)\
     -Llevel2toponyms:<(cat osm-boundaries/2/*-toponyms.geojson) -Llevel3toponyms:<(cat osm-boundaries/3/*-toponyms.geojson) -Llevel4toponyms:<(cat osm-boundaries/4/*-toponyms.geojson)\
     -Llevel5toponyms:<(cat osm-boundaries/5/*-toponyms.geojson) -Llevel6toponyms:<(cat osm-boundaries/6/*-toponyms.geojson) -Llevel7toponyms:<(cat osm-boundaries/7/*-toponyms.geojson) -Llevel8toponyms:<(cat osm-boundaries/8/*-toponyms.geojson) -f --no-tile-size-limit`
