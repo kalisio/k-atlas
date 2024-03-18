@@ -1,10 +1,14 @@
 # k-atlas
 
-Krawler based jobs to scrape various data related to administrative entities.
+[Krawler](https://kalisio.github.io/krawler/) based jobs to scrape various data related to administrative entities.
 
 ## OSM boundaries
 
-This job relies on [osmium](https://osmcode.org/osmium-tool/) to extract administrative boundaries at different level from OSM pbf files.
+This job relies on:
+- [osmium](https://osmcode.org/osmium-tool) to extract administrative boundaries at different level from OSM pbf files,
+- [ogr2ogr](https://gdal.org/programs/ogr2ogr.html) to generate sequential GeoJson files to handle large datasets,
+- [mapshaper](https://github.com/mbloch/mapshaper) to simplify complex geometries,
+- [turfjs](https://turfjs.org/) to compute the position of toponyms.
 
 > [!IMPORTANT]  
 > [osmimum](https://osmcode.org/osmium-tool/) must be installed on your system. 
@@ -13,6 +17,16 @@ To setup the regions to process, you must export the environment variables `REGI
 ```bash
 export REGIONS="europe/france;europe/albania"
 ```
+
+If you'd like to simplify geometries you can setup the simplification tolerance and algorithm:
+```bash
+export SIMPLIFICATION_TOLERANCE=500 # defaults to 128
+export SIMPLIFICATION_ALGORITHM=visvalingam # defaults to 'db'
+```
+
+> Note
+>
+> The given simplification tolerance will be scaled according to administrative level using this formula: `tolerance at level N = tolerance / 2^(N-2)`
 
 ### Planet generation
 
@@ -27,6 +41,12 @@ export NODE_OPTIONS=--max-old-space-size=8192
 ```
 
 Then, launch the `osm-planet-boundaries` job for level 2, which uses a planet extract, and planet MBTiles generation. Indeed, country-level (i.e. administrative level 2) requires a whole planet file to avoid missing relation between continental and islands areas.
+
+To avoid generating data multiple times you can easily dump/restore it from/to MongoDB databases:
+```bash
+mongodump --host=localhost --port=27017 --username=user --password=password --db=atlas --collection=osm-boundaries --gzip --out dump
+mongorestore --db=atlas --gzip --host=mongodb.example.net --port=27018 --username=user --password=password dump/atlas
+```
 
 ## Admin-Express
 
