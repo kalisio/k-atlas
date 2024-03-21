@@ -8,10 +8,11 @@ This job relies on:
 - [osmium](https://osmcode.org/osmium-tool) to extract administrative boundaries at different level from OSM pbf files,
 - [ogr2ogr](https://gdal.org/programs/ogr2ogr.html) to generate sequential GeoJson files to handle large datasets,
 - [mapshaper](https://github.com/mbloch/mapshaper) to simplify complex geometries,
+- [tippecanoe](https://github.com/felt/tippecanoe) to generate MBTiles,
 - [turfjs](https://turfjs.org/) to compute the position of toponyms.
 
 > [!IMPORTANT]  
-> [osmimum](https://osmcode.org/osmium-tool/) must be installed on your system. 
+> osmium, ogr, mapshaper and tippecanoe command-line tools must be installed on your system. 
 
 To setup the regions to process, you must export the environment variables `REGIONS` with the [GeoFabrik](https://download.geofabrik.de/) regions. For instance:
 ```bash
@@ -43,6 +44,8 @@ export NODE_OPTIONS=--max-old-space-size=8192
 ```
 
 Then, launch the `osm-planet-boundaries` job for level 2, which uses a planet extract, and planet MBTiles generation. Indeed, country-level (i.e. administrative level 2) requires a whole planet file to avoid missing relation between continental and islands areas.
+
+Last but not least, launch the `generate-osm-boundaries-mbtiles.sh` script to generate a MBTils file from GeoJson files produced by the job.
 
 To avoid generating data multiple times you can easily dump/restore it from/to MongoDB databases:
 ```bash
