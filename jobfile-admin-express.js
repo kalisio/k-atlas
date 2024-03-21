@@ -74,10 +74,11 @@ export default {
           collection: '<%= collection %>',
           ordered: false
         },
+        /*
         writeJson: {
           store: 's3',
           key: path.posix.join(storePath, `<%= collection.replace('admin-express-', '') %>.geojson`)
-        },
+        },*/
         clearData: {}
       }
     },
