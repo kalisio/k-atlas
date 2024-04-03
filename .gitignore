@@ -12,5 +12,6 @@ yarn-error.log*
 node_modules
 
 # local data
-output
+admin-express
 osm-boundaries
+ADMIN-EXPRESS-*

@@ -7,6 +7,8 @@ import { utils, hooks } from '@kalisio/krawler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/atlas'
+
+const layerFilter = ['ARRONDISSEMENT', 'CANTON', 'COLLECTIVITE_TERRITORIALE', 'COMMUNE', 'DEPARTEMENT', 'EPCI', 'REGION'] 
 const storePath = process.env.STORE_PATH || 'data/IGN/Admin-Express'
 
 // Geoplatform download service URL
@@ -14,20 +16,25 @@ const url = 'https://data.geopf.fr/telechargement/download/ADMIN-EXPRESS-COG-CAR
 
 let generateTasks = (options) => {
   return async (hook) => {
+    //const data = 
     let tasks = []
-    
     const store = await utils.getStoreFromHook(hook,'generateTasks')
-    const pattern = path.join(store.path, '**/*.geojson')
+    const pattern = path.join(store.path, '**/*.shp')
     const files = sync(pattern)
     files.forEach(file => {
-      const key = _.replace(path.normalize(file), path.normalize(store.path), '.')
-      let task = {
-        id: _.kebabCase(path.parse(file).name),
-        key: key,
-        collection: 'admin-express-' + _.kebabCase(path.parse(file).name)
+      const layer = path.parse(file).name
+      if (layerFilter.includes(layer)) {
+        const key = _.replace(path.normalize(file), path.normalize(store.path), '.')
+        let task = {
+          id: _.kebabCase(layer),
+          key: key,
+          collection: 'admin-express-' + _.kebabCase(layer)
+        }
+        console.log('<i> processing', layer)
+        tasks.push(task)  
+      } else {
+        console.log('<!> skipping', layer)
       }
-      console.log('creating task for ' + file)
-      tasks.push(task)  
     })
     hook.data.tasks = tasks
     return hook
@@ -48,7 +55,7 @@ export default {
   hooks: {
     tasks: {
       after: {
-        readJson: {
+        /*readJson: {
           key: '<%= key %>'
         },
         apply: {
@@ -73,7 +80,7 @@ export default {
           chunkSize: 256,
           collection: '<%= collection %>',
           ordered: false
-        },
+        },*/
         /*
         writeJson: {
           store: 's3',
