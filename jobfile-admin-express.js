@@ -6,10 +6,12 @@ import centroid from '@turf/centroid'
 import { utils, hooks } from '@kalisio/krawler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/atlas'
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
 const layerFilter = ['ARRONDISSEMENT', 'CANTON', 'COLLECTIVITE_TERRITORIALE', 'COMMUNE', 'DEPARTEMENT', 'EPCI', 'REGION'] 
 const storePath = process.env.STORE_PATH || 'data/IGN/Admin-Express'
+const collection = 'admin-express'
+
 
 // Geoplatform download service URL
 const url = 'https://data.geopf.fr/telechargement/download/ADMIN-EXPRESS-COG-CARTO/ADMIN-EXPRESS-COG-CARTO_3-2__SHP_WGS84G_FRA_2023-05-03/ADMIN-EXPRESS-COG-CARTO_3-2__SHP_WGS84G_FRA_2023-05-03.7z'
@@ -30,7 +32,7 @@ let generateTasks = (options) => {
           key: key,
           collection: 'admin-express-' + _.kebabCase(layer)
         }
-        console.log('<i> processing', layer)
+        console.log('<i> processing', layer, key)
         tasks.push(task)  
       } else {
         console.log('<!> skipping', layer)
@@ -55,37 +57,61 @@ export default {
   hooks: {
     tasks: {
       after: {
-        /*readJson: {
-          key: '<%= key %>'
+        convertGeojson: {
+          hook: 'runCommand',
+          command: `mapshaper -i <%= key %>.shp -o format=geojson precision=0.000001 <%= key %>.geojson`
         },
-        apply: {
-          function: (item) => {
-            _.forEach(item.data.features, (feature) => {
-              if (feature.geometry !== 'Point') {
-                feature['centroid'] = centroid(feature.geometry).geometry
-              }
-            })
-          }
+        readJson: {
+          key: '<%= key %>.geojson'
         },
-        dropMongoCollection: {
-          collection: '<%= collection %>'
-        },
-        createMongoCollection: {
-          collection: '<%= collection %>',
-          indices: [
-            { geometry: '2dsphere' }
-          ]
-        },
-        writeMongoCollection: {
-          chunkSize: 256,
-          collection: '<%= collection %>',
-          ordered: false
-        },*/
-        /*
-        writeJson: {
+        /*writeJson: {
           store: 's3',
           key: path.posix.join(storePath, `<%= collection.replace('admin-express-', '') %>.geojson`)
         },*/
+        generateToponyms: {
+          hook: 'apply',
+          function: (item) => {
+            let toponyms = []
+            const features = item.data
+            _.forEach(features, feature => {
+              if (!_.get(feature, 'geometry') || !_.get(feature, 'properties.name')) return
+              // If multiple geometry keep the largest one only
+              const subfeatures = flatten(feature)
+              let toponym
+              let largestArea = 0
+              _.forEach(subfeatures.features, subfeature => {
+                const subfeatureArea = area(subfeature)
+                if (subfeatureArea > largestArea) {
+                  largestArea = subfeatureArea
+                  toponym = centerOfMass(subfeature.geometry)
+                  toponym.properties = {
+                    name: feature.properties.name
+                  }
+                  if (_.has(feature, 'properties.name:en')) {
+                    _.set(toponym, 'properties.name:en', feature.properties['name:en'])
+                  }
+                }
+              })
+              if (toponym) toponyms.push(toponym)
+            })
+            item.toponyms = {
+              type: 'FeatureCollection',
+              features: toponyms
+            }
+          }
+        },
+        writeToponyms: {
+          hook: 'writeJson',
+          dataPath: 'data.toponyms',
+          key: `<%= key %>-toponyms.geojson`
+        },
+        writeMongoCollection: {
+          chunkSize: 256,
+          collection,
+          checkKeys: false,
+          ordered : false,
+          faultTolerant: true
+        },
         clearData: {}
       }
     },
@@ -113,6 +139,17 @@ export default {
           url: dbUrl,
           // Required so that client is forwarded from job to tasks
           clientPath: 'taskTemplate.client'
+        },
+        dropMongoCollection: {
+          collection,
+          clientPath: 'taskTemplate.client'
+        },
+        createMongoCollection: {
+          collection,
+          clientPath: 'taskTemplate.client',
+          indices: [
+            { geometry: '2dsphere' }
+          ]
         },
         runCommand: {
           command: './geoservices.sh ' + url + ' admin-express'
