@@ -14,4 +14,5 @@ ARCHIVE=`basename $URL`
 echo "<> extracting $ARCHIVE"
 rm -fr $OUTPUT_DIRECTORY
 7z x $ARCHIVE -o$OUTPUT_DIRECTORY
+rm $ARCHIVE
 
