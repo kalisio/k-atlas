@@ -26,10 +26,10 @@ let generateTasks = (options) => {
     files.forEach(file => {
       const layer = path.parse(file).name
       if (layerFilter.includes(layer)) {
-        const key = _.replace(path.normalize(file), path.normalize(store.path), '.')
+        const key = _.replace(path.normalize(file), path.normalize(store.path), 'admin-express')
         let task = {
           id: _.kebabCase(layer),
-          key: key,
+          key: key.replace('.shp', ''),
           collection: 'admin-express-' + _.kebabCase(layer)
         }
         console.log('<i> processing', layer, key)
