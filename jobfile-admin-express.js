@@ -26,7 +26,7 @@ let generateTasks = (options) => {
     files.forEach(file => {
       const layer = path.parse(file).name
       if (layerFilter.includes(layer)) {
-        const key = _.replace(path.normalize(file), path.normalize(store.path), 'admin-express')
+        const key = _.replace(path.normalize(file), path.normalize(store.path), '.')
         let task = {
           id: _.kebabCase(layer),
           key: key.replace('.shp', ''),
@@ -59,7 +59,7 @@ export default {
       after: {
         convertGeojson: {
           hook: 'runCommand',
-          command: `mapshaper -i <%= key %>.shp -o format=geojson precision=0.000001 <%= key %>.geojson`
+          command: `mapshaper -i admin-express/<%= key %>.shp -o format=geojson precision=0.000001 admin-express/<%= key %>.geojson`
         },
         readJson: {
           key: '<%= key %>.geojson'
