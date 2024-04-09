@@ -2,7 +2,9 @@ import _ from 'lodash'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { sync } from 'glob'
-import centroid from '@turf/centroid'
+import area from '@turf/area'
+import flatten from '@turf/flatten'
+import centerOfMass from '@turf/center-of-mass'
 import { utils, hooks } from '@kalisio/krawler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -30,9 +32,10 @@ let generateTasks = (options) => {
         let task = {
           id: _.kebabCase(layer),
           key: key.replace('.shp', ''),
-          collection: 'admin-express-' + _.kebabCase(layer)
+          collection: 'admin-express-' + _.kebabCase(layer),
+          layer: layer
         }
-        console.log('<i> processing', layer, key)
+        console.log('<i> processing', layer)
         tasks.push(task)  
       } else {
         console.log('<!> skipping', layer)
@@ -72,9 +75,9 @@ export default {
           hook: 'apply',
           function: (item) => {
             let toponyms = []
-            const features = item.data
+            const features = item.data.features
             _.forEach(features, feature => {
-              if (!_.get(feature, 'geometry') || !_.get(feature, 'properties.name')) return
+              if (!_.get(feature, 'geometry') || !_.get(feature, 'properties.NOM')) return
               // If multiple geometry keep the largest one only
               const subfeatures = flatten(feature)
               let toponym
@@ -85,10 +88,10 @@ export default {
                   largestArea = subfeatureArea
                   toponym = centerOfMass(subfeature.geometry)
                   toponym.properties = {
-                    name: feature.properties.name
+                    NOM: feature.properties.NOM
                   }
-                  if (_.has(feature, 'properties.name:en')) {
-                    _.set(toponym, 'properties.name:en', feature.properties['name:en'])
+                  if (_.has(feature, 'properties.NOM_M')) {
+                    _.set(toponym, 'properties.NOM_M', feature.properties['NOM_M'])
                   }
                 }
               })
@@ -112,7 +115,11 @@ export default {
           ordered : false,
           faultTolerant: true
         },
-        clearData: {}
+        clearData: {},
+        log: {
+          hook: 'apply',
+          function: (task) => console.log(`Terminating task ${task.layer}`)
+        }
       }
     },
     jobs: {
@@ -151,9 +158,9 @@ export default {
             { geometry: '2dsphere' }
           ]
         },
-        runCommand: {
+        /*runCommand: {
           command: './geoservices.sh ' + url + ' admin-express'
-        },
+        },*/
         generateTasks: {}
       },
       after: {
