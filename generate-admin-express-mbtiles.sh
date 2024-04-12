@@ -28,7 +28,6 @@ tile-join -f -o admin-express/admin-express-toponyms.mbtiles \
   $store/DEPARTEMENT-toponyms.mbtiles \
   $store/CANTON-toponyms.mbtiles \
   $store/EPCI-toponyms.mbtiles \
-  $store/DEPARTEMENT-toponyms.mbtiles \
   $store/COLLECTIVITE_TERRITORIALE-toponyms.mbtiles \
   $store/REGION-toponyms.mbtiles
 

@@ -71,6 +71,24 @@ export default {
           store: 's3',
           key: path.posix.join(storePath, `<%= collection.replace('admin-express-', '') %>.geojson`)
         },*/
+        generateLayer: {
+          hook: 'apply',
+          function: (item) => {
+            const features = item.data.features
+            _.forEach(features, feature => {
+              _.set(feature, 'properties.layer', item.layer)
+            })
+            item.features = {
+              type: 'FeatureCollection',
+              features: features
+            }
+          }
+        },
+        writeLayer: {
+          hook: 'writeJson',
+          dataPath: 'data.features',
+          key: `<%= key %>.geojson`
+        },
         generateToponyms: {
           hook: 'apply',
           function: (item) => {
@@ -158,9 +176,9 @@ export default {
             { geometry: '2dsphere' }
           ]
         },
-        /*runCommand: {
+        runCommand: {
           command: './geoservices.sh ' + url + ' admin-express'
-        },*/
+        },
         generateTasks: {}
       },
       after: {
