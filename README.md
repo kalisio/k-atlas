@@ -1,5 +1,7 @@
 # k-atlas
 
+[![ci](https://github.com/kalisio/k-centipede/actions/workflows/main.yaml/badge.svg)](https://github.com/kalisio/k-centipede/actions/workflows/main.yaml)
+
 [Krawler](https://kalisio.github.io/krawler/) based jobs to scrape various data related to administrative entities.
 
 ## OSM boundaries
