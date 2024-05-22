@@ -139,6 +139,9 @@ export default {
                   toponym.properties = {
                     name: feature.properties.name
                   }
+                  toponym.properties = {
+                    admin_level: feature.properties.admin_level
+                  }
                   if (_.has(feature, 'properties.name:en')) {
                     _.set(toponym, 'properties.name:en', feature.properties['name:en'])
                   }
