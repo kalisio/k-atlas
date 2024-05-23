@@ -137,9 +137,7 @@ export default {
                   largestArea = subfeatureArea
                   toponym = centerOfMass(subfeature.geometry)
                   toponym.properties = {
-                    name: feature.properties.name
-                  }
-                  toponym.properties = {
+                    name: feature.properties.name,
                     admin_level: feature.properties.admin_level
                   }
                   if (_.has(feature, 'properties.name:en')) {
