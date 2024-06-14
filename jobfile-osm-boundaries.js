@@ -13,11 +13,11 @@ const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
 const baseUrl = 'https://download.geofabrik.de'
 // Process whole world with 'africa;asia;australia-oceania;central-america;europe;north-america;south-america'
-const regions = process.env.REGIONS || 'africa;asia;australia-oceania;central-america;europe;north-america;south-america'
+const regions = process.env.REGIONS || 'africa' //;asia;australia-oceania;central-america;europe;north-america;south-america'
 const fabrikSuffix = '-latest.osm.pbf'
 // Level 2 = countries, it requires an additional job working with a planet extract not continent extracts
-const minLevel = Number(process.env.MIN_LEVEL) || 3
-const maxLevel = Number(process.env.MAX_LEVEL) || 8
+const minLevel = Number(process.env.MIN_LEVEL) || 2
+const maxLevel = Number(process.env.MAX_LEVEL) || 4  
 // Simplification tolerance, defaults to 128m at level 2 => 2m at level 8
 const tolerance = process.env.SIMPLIFICATION_TOLERANCE ? Number(process.env.SIMPLIFICATION_TOLERANCE) : 128
 const simplificationAlgorithm = process.env.SIMPLIFICATION_ALGORITHM || 'dp' // could be 'visvalingam'
@@ -136,13 +136,16 @@ export default {
                 if (subfeatureArea > largestArea) {
                   largestArea = subfeatureArea
                   toponym = centerOfMass(subfeature.geometry)
-                  toponym.properties = {
-                    name: feature.properties.name,
-                    admin_level: feature.properties.admin_level
-                  }
-                  if (_.has(feature, 'properties.name:en')) {
+                  _.forOwn(feature.properties, function(value, key) {
+                    if (key.startsWith("name")) {
+                      toponym.properties[key] = value
+                    }
+                    }
+                  )
+                  toponym.properties.admin_level = feature.properties.admin_level
+                  /*if (_.has(feature, 'properties.name:en')) {
                     _.set(toponym, 'properties.name:en', feature.properties['name:en'])
-                  }
+                  }*/
                 }
               })
               if (toponym) toponyms.push(toponym)
