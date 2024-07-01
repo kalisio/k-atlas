@@ -2,8 +2,6 @@
 
 [![Latest Release](https://img.shields.io/github/v/tag/kalisio/k-atlas?sort=semver&label=latest)](https://github.com/kalisio/k-atlas/releases)
 [![CI](https://github.com/kalisio/k-atlas/actions/workflows/main.yaml/badge.svg)](https://github.com/kalisio/k-atlas/actions/workflows/main.yaml)
-[![Code Climate](https://codeclimate.com/github/kalisio/k-atlas/badges/gpa.svg)](https://codeclimate.com/github/kalisio/k-atlas)
-[![Test Coverage](https://codeclimate.com/github/kalisio/k-atlas/badges/coverage.svg)](https://codeclimate.com/github/kalisio/k-atlas/coverage)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [Krawler](https://kalisio.github.io/krawler/) based jobs to scrape various data related to administrative entities.
