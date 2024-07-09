@@ -13,11 +13,11 @@ const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
 const baseUrl = 'https://download.geofabrik.de'
 // Process whole world with 'africa;asia;australia-oceania;central-america;europe;north-america;south-america'
-const regions = process.env.REGIONS || 'africa' //;asia;australia-oceania;central-america;europe;north-america;south-america'
+const regions = process.env.REGIONS || 'asia;australia-oceania;central-america;europe;north-america;south-america'
 const fabrikSuffix = '-latest.osm.pbf'
 // Level 2 = countries, it requires an additional job working with a planet extract not continent extracts
-const minLevel = Number(process.env.MIN_LEVEL) || 2
-const maxLevel = Number(process.env.MAX_LEVEL) || 4  
+const minLevel = Number(process.env.MIN_LEVEL) || 3
+const maxLevel = Number(process.env.MAX_LEVEL) || 8  
 // Simplification tolerance, defaults to 128m at level 2 => 2m at level 8
 const tolerance = process.env.SIMPLIFICATION_TOLERANCE ? Number(process.env.SIMPLIFICATION_TOLERANCE) : 128
 const simplificationAlgorithm = process.env.SIMPLIFICATION_ALGORITHM || 'dp' // could be 'visvalingam'
