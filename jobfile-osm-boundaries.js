@@ -140,12 +140,8 @@ export default {
                     if (key.startsWith("name")) {
                       toponym.properties[key] = value
                     }
-                    }
-                  )
+                  })
                   toponym.properties.admin_level = feature.properties.admin_level
-                  /*if (_.has(feature, 'properties.name:en')) {
-                    _.set(toponym, 'properties.name:en', feature.properties['name:en'])
-                  }*/
                 }
               })
               if (toponym) toponyms.push(toponym)
