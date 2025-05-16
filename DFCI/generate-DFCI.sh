@@ -18,12 +18,12 @@ declare -A FILES=(
 # Zoom configuration
 declare -A MINZOOM=(
   ["DFCI-100km"]=0
-  ["DFCI-20km"]=6
+  ["DFCI-20km"]=5
   ["DFCI-2km"]=12
 )
 declare -A MAXZOOM=(
   ["DFCI-100km"]=5
-  ["DFCI-20km"]=11
+  ["DFCI-20km"]=12
   ["DFCI-2km"]=15  
 )
 
@@ -49,14 +49,16 @@ for NAME in "${!FILES[@]}"; do
   # Generate centroids
   mapshaper "$SHP_FILE" -quiet -proj wgs84 -points centroid -o format=geojson force "$POINT_GEOJSON"
 
-
   # Convert to MBTiles
-  tippecanoe -o "$MBTILES_FILE" "$POLY_GEOJSON" "$POINT_GEOJSON" \
-    --force \
-    --minimum-zoom="${MINZOOM[$NAME]}" \
-    --maximum-zoom="${MAXZOOM[$NAME]}" \
-    --layer="$NAME" \
-    --drop-densest-as-needed --coalesce-densest-as-needed
+  # tippecanoe -o "$MBTILES_FILE" "$POLY_GEOJSON" "$POINT_GEOJSON" \
+  #   --force \
+  #   --minimum-zoom="${MINZOOM[$NAME]}" \
+  #   --maximum-zoom="${MAXZOOM[$NAME]}" \
+  #   --layer="$NAME" \
+  #   --drop-densest-as-needed --coalesce-densest-as-needed
+
+  tippecanoe -f -o "$MBTILES_FILE" --minimum-zoom="${MINZOOM[$NAME]}" --maximum-zoom="${MAXZOOM[$NAME]}" --coalesce-densest-as-needed --extend-zooms-if-still-dropping --named-layer="$NAME":<(cat "$POLY_GEOJSON")
+  tippecanoe -f -o "$OUTDIR/$NAME-centroids.mbtiles" --minimum-zoom="${MINZOOM[$NAME]}" --maximum-zoom="${MAXZOOM[$NAME]}" -r1 --coalesce-densest-as-needed --named-layer="$NAME-centroids":<(cat "$POINT_GEOJSON")
 done
 
 # Merge MBTiles files
