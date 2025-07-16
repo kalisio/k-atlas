@@ -49,7 +49,15 @@ export NODE_OPTIONS=--max-old-space-size=8192
 
 Then, launch the `osm-planet-boundaries` job for level 2, which uses a planet extract, and planet MBTiles generation. Indeed, country-level (i.e. administrative level 2) requires a whole planet file to avoid missing relation between continental and islands areas.
 
-Last but not least, launch the `generate-osm-boundaries-mbtiles.sh` script to generate a MBTils file from GeoJson files produced by the job.
+Last but not least, launch the `generate-osm-boundaries-mbtiles.sh` script to generate a MBTiles file from GeoJson files produced by the job or `generate-osm-boundaries-gpkg.sh` script to generate a GPKG file, which requires the `ogrmerge` tool to be installed:
+```bash
+sudo nano /etc/apt/sources.list
+# Edit file and add this line
+deb http://deb.debian.org/debian/ unstable main contrib non-free
+# Then install GDAL dev version to get ogrmerge
+sudo apt update
+sudo apt-get install libgdal-dev
+```
 
 To avoid generating data multiple times you can easily dump/restore it from/to MongoDB databases:
 ```bash
