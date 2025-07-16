@@ -92,7 +92,7 @@ export default {
         },
         filter: {
           hook: 'runCommand',
-          command: `cat <%= key %>-boundaries.geojsonseq | grep 'name' | grep 'wikidata' | grep 'admin_level' > <%= key %>-boundaries.geojson && rm -f <%= key %>-boundaries.geojsonseq`
+          command: `cat <%= key %>-boundaries.geojsonseq | grep 'name' | grep 'admin_level' > <%= key %>-boundaries.geojson && rm -f <%= key %>-boundaries.geojsonseq`
         },
         // As we use mapshaper to simplify we need to switch from sequential to standard GeoJSON
         asFeatureCollection: {
