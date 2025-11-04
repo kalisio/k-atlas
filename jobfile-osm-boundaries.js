@@ -22,6 +22,9 @@ const maxLevel = Number(process.env.MAX_LEVEL) || 8
 const tolerance = process.env.SIMPLIFICATION_TOLERANCE ? Number(process.env.SIMPLIFICATION_TOLERANCE) : 128
 const simplificationAlgorithm = process.env.SIMPLIFICATION_ALGORITHM || 'dp' // could be 'visvalingam'
 const simplify = !_.isNil(tolerance)
+// Export metadata for all languages ?
+const languages = (process.env.LANGUAGES ? process.env.LANGUAGES.split(';') : null)
+const i18nProperties = ['name', 'alt_name', 'official_name']
 const collection = 'osm-boundaries'
 
 let generateTasks = (options) => {
@@ -118,6 +121,27 @@ export default {
             unitMapping: {
               'properties.admin_level': { asNumber: true }
             }
+          }
+        },
+        filterLanguages: {
+          hook: 'apply',
+          match: { predicate: (item) => languages },
+          function: (item) => {
+            const features = item.data
+            _.forEach(features, feature => {
+              const properties = feature.properties || {}
+              _.forEach(i18nProperties, i18nProperty => {
+                _.forOwn(properties, (value, key) => {
+                  // We always keep base property, e.g. name,
+                  // and filter i18n properties like name:es
+                  if (key.startsWith(`${i18nProperty}:`)) {
+                    const propertyAndLanguage = key.split(':')
+                    const language = (propertyAndLanguage.length > 1 ? propertyAndLanguage[1] : null)
+                    if (languages && !languages.includes(language)) delete properties[key]
+                  }
+                })
+              })
+            })
           }
         },
         generateToponyms: {

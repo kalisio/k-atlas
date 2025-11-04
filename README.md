@@ -33,6 +33,11 @@ export SIMPLIFICATION_ALGORITHM=visvalingam # defaults to 'db'
 >
 > The given simplification tolerance will be scaled according to administrative level using this formula: `tolerance at level N = tolerance / 2^(N-2)`
 
+If you only need some languages for i18n properties (`name`, `alt_name` and `official_name`) you can select the target languages like this:
+```bash
+export LANGUAGES="en;fr"
+```
+
 For testing purpose you can also limit the processed administrative levels using the `MIN_LEVEL/MAX_LEVEL` environment variables.
 
 ### Planet generation
