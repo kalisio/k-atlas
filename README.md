@@ -33,7 +33,7 @@ export SIMPLIFICATION_ALGORITHM=visvalingam # defaults to 'db'
 >
 > The given simplification tolerance will be scaled according to administrative level using this formula: `tolerance at level N = tolerance / 2^(N-2)`
 
-If you only need some languages for i18n properties (`name`, `alt_name` and `official_name`) you can select the target languages like this:
+If you only need some languages for i18n properties (`name`, `alt_name` and `official_name`) in database you can select the target languages like this:
 ```bash
 export LANGUAGES="en;fr"
 ```
@@ -70,7 +70,7 @@ sudo apt-get install libgdal-dev
 To avoid generating data multiple times you can easily dump/restore it from/to MongoDB databases:
 ```bash
 mongodump --host=localhost --port=27017 --username=user --password=password --db=atlas --collection=osm-boundaries --gzip --out dump
-mongorestore --db=atlas --gzip --host=mongodb.example.net --port=27018 --username=user --password=password dump/atlas
+mongorestore --db=atlas --gzip --host=mongodb.example.net --port=27018 --username=user --password=password --collection=osm-boundaries dump/atlas/osm-boundaries.bson.gz
 ```
 
 ## Admin-Express
