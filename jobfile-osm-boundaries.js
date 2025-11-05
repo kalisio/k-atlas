@@ -13,7 +13,7 @@ const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
 const baseUrl = 'https://download.geofabrik.de'
 // Process whole world with 'africa;asia;australia-oceania;central-america;europe;north-america;south-america'
-const regions = process.env.REGIONS || 'asia;australia-oceania;central-america;europe;north-america;south-america'
+const regions = process.env.REGIONS || 'africa;asia;australia-oceania;central-america;europe;north-america;south-america'
 const fabrikSuffix = '-latest.osm.pbf'
 // Level 2 = countries, it requires an additional job working with a planet extract not continent extracts
 const minLevel = Number(process.env.MIN_LEVEL) || 3
