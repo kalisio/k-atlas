@@ -72,6 +72,11 @@ To avoid generating data multiple times you can easily dump/restore it from/to M
 mongodump --host=localhost --port=27017 --username=user --password=password --db=atlas --collection=osm-boundaries --gzip --out dump
 mongorestore --db=atlas --gzip --host=mongodb.example.net --port=27018 --username=user --password=password --collection=osm-boundaries dump/atlas/osm-boundaries.bson.gz
 ```
+If you dump the collection first recreate required indices to speed-up data access with the Mongo shell like:
+```
+db['admin-express'].createIndexes([{ geometry: '2dsphere' }, { 'properties.layer': 1 }, { geometry: '2dsphere', 'properties.layer': 1 }])
+db['osm-boundaries'].createIndexes([{ geometry: '2dsphere' }, { 'properties.admin_level': 1 }, { geometry: '2dsphere', 'properties.admin_level': 1 }])
+```
 
 ## Admin-Express
 

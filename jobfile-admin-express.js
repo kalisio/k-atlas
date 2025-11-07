@@ -173,7 +173,9 @@ export default {
           collection,
           clientPath: 'taskTemplate.client',
           indices: [
-            { geometry: '2dsphere' }
+            { geometry: '2dsphere' },
+            { 'properties.layer': 1 },
+            { geometry: '2dsphere', 'properties.layer': 1 }
           ]
         },
         runCommand: {
