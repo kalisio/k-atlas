@@ -178,8 +178,14 @@ export default {
             { geometry: '2dsphere', 'properties.layer': 1 }
           ]
         },
-        runCommand: {
+        fetchAdminExpress: {
+          hook: 'runCommand',
           command: './geoservices.sh ' + url + ' admin-express'
+        },
+        // Fetch and merge french polynesia data with admin-express
+        fetchAndMergePolynesia: {
+          hook: 'runCommand',
+          command: './fetch-polynesia.sh polynesia admin-express'
         },
         generateTasks: {}
       },
