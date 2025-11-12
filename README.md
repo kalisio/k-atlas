@@ -86,20 +86,13 @@ https://geoservices.ign.fr/documentation/diffusion/telechargement-donnees-libres
 
 ### with French Polynesia
 
-An updated shell script is available that include French Polynesia data in the result mbtiles: `generate-admin-express-with-french-polynesia.sh`
-
-Call it like this :
-``` bash
-./generate-admin-express-with-french-polynesia.sh $PATH_TO_WORK_FOLDER
-```
-
-It'll download required data and build the result mbtiles in `$PATH_TO_WORK_FOLDER/admin-express.mbtiles`
+The job has been updated to include French Polynesia data in the admin-express dataset.
 
 The script requires the following tools:
  - `mapshaper` (can be installed with `npm install -g mapshaper`)
  - `wget`, `7z`, `tippecanoe` and `tile-join`. All of those can probably be found as packages in your favorite distribution (`apt install 7z wget tippecanoe`).
 
-The script relies on Admin Express data available from [here](https://geoservices.ign.fr/telechargement-api/ADMIN-EXPRESS-COG-CARTO) (using FRA `zone`). French Polynesia data is fetched from [here](https://www.data.gouv.fr/fr/datasets/limites-geographiques-administratives/) and [here](https://www.tefenua.data.gov.pf/maps/6e392df616c949309eda19656450562a/about) for the INSEE codes.
+French Polynesia data is fetched from [here](https://www.data.gouv.fr/fr/datasets/limites-geographiques-administratives/) and [here](https://www.tefenua.data.gov.pf/maps/6e392df616c949309eda19656450562a/about) for the INSEE codes.
 
 The script reprojects and patches the French Polynesia data to match the Admin Express schema, adding properties like `INSEE_COM`, `INSEE_DEP`, `NOM`, `NOM_M` and `POPULATION` to it. It then merges with the Admin Express dataset to build the final mbtiles.
 
