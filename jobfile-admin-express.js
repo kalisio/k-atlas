@@ -10,7 +10,7 @@ import { utils, hooks } from '@kalisio/krawler'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
-const layerFilter = ['ARRONDISSEMENT', 'CANTON', 'COLLECTIVITE_TERRITORIALE', 'COMMUNE', 'DEPARTEMENT', 'EPCI', 'REGION'] 
+const layerFilter = ['ARRONDISSEMENT', 'CANTON', 'COLLECTIVITE_TERRITORIALE', 'COMMUNE', 'DEPARTEMENT', 'EPCI', 'REGION', 'PAYS']
 const storePath = process.env.STORE_PATH || 'data/IGN/Admin-Express'
 const collection = 'admin-express'
 
@@ -186,6 +186,11 @@ export default {
         fetchAndMergePolynesia: {
           hook: 'runCommand',
           command: './fetch-polynesia.sh polynesia admin-express'
+        },
+        // Generate 'PAYS' shp file using mapshaper
+        generatePays: {
+          hook: 'runCommand',
+          command: './generate-admin-express-pays.sh admin-express polynesia'
         },
         generateTasks: {}
       },

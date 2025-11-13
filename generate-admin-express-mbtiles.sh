@@ -10,6 +10,7 @@ tippecanoe -f -o $store/CANTON.mbtiles -Z7 -z10 --coalesce-densest-as-needed --e
 tippecanoe -f -o $store/EPCI.mbtiles -Z6 -z9 --coalesce-densest-as-needed --extend-zooms-if-still-dropping --drop-smallest-as-needed -Lecpi:<(cat $store/EPCI.geojson)
 tippecanoe -f -o $store/COLLECTIVITE_TERRITORIALE.mbtiles -Z5 -z8 --coalesce-densest-as-needed --extend-zooms-if-still-dropping --drop-smallest-as-needed -Lcollectivite-territoriale:<(cat $store/COLLECTIVITE_TERRITORIALE.geojson)
 tippecanoe -f -o $store/REGION.mbtiles -Z3 -z10 --coalesce-densest-as-needed --extend-zooms-if-still-dropping --drop-smallest-as-needed -Lregion:<(cat $store/REGION.geojson)
+tippecanoe -f -o $store/PAYS.mbtiles -Z1 -z7 --coalesce-densest-as-needed --extend-zooms-if-still-dropping --drop-smallest-as-needed -Lpays:<(cat $store/PAYS.geojson)
 
 
 echo "<> generating toponyms mbtiles"
@@ -40,7 +41,8 @@ tile-join -f -o admin-express/admin-express-polygons.mbtiles \
   $store/EPCI.mbtiles \
   $store/DEPARTEMENT.mbtiles \
   $store/COLLECTIVITE_TERRITORIALE.mbtiles \
-  $store/REGION.mbtiles
+  $store/REGION.mbtiles \
+  $store/PAYS.mbtiles
 
 echo "<> merging all mbtiles"
 tile-join -f -o admin-express/admin-express.mbtiles admin-express/admin-express-polygons.mbtiles admin-express/admin-express-toponyms.mbtiles
