@@ -34,14 +34,14 @@ mapshaper "$TMPDIR/shapefiles/Com.shp" \
     -each 'INSEE_DEP = "987", NOM_M = NOM.toUpperCase()' \
     -filter-fields INSEE_COM,INSEE_DEP,NOM,NOM_M,POPULATION \
     -proj wgs84 \
-    -simplify "80%" \
+    -simplify "90%" keep-shapes \
     -o "$POLYNESIA_DIR/COMMUNE.shp"
 
 # Generate departement
 # Simplify geometry in the process
 mapshaper "$POLYNESIA_DIR/COMMUNE.shp" \
     -dissolve copy-fields="" calc='NOM = "Polynésie française", NOM_M = "POLYNÉSIE FRANÇAISE", INSEE_DEP = "987"' \
-    -simplify "50%" \
+    -simplify "50%" keep-shapes \
     -o "$POLYNESIA_DIR/DEPARTEMENT.shp"
 
 # Merge with admin-express

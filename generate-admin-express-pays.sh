@@ -17,6 +17,7 @@ mapshaper -i "$ADMIN_EXPRESS_DIRNAME/PAYS_tmp.shp" "$POLYNESIA_DIR/DEPARTEMENT.s
     -drop 'fields=*' \
     -merge-layers \
     -dissolve copy-fields="" \
+    -simplify "50%" keep-shapes \
     -o "$ADMIN_EXPRESS_DIRNAME/PAYS.shp"
 
 rm "$ADMIN_EXPRESS_DIRNAME/PAYS_tmp.shp"
