@@ -6,11 +6,11 @@ import { utils, hooks } from '@kalisio/krawler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
-const FILTERS = process.env.TOPAGE_LAYERS || ['BassinVersant']
+const FILTERS = process.env.TOPAGE_LAYERS || ['BassinVersant','BassinHydrographique']
 
 
 // Topage download service URL
-const url = 'https://services.sandre.eaufrance.fr/telechargement/geo/ETH/BDTopage/2024/BD_Topage_FXX_2024-shp.zip'
+const url = 'https://services.sandre.eaufrance.fr/telechargement/geo/ETH/BDTopage/2025/BD_Topage_FXX_2025-shp.zip'
 
 let generateTasks = (options) => {
   return async (hook) => {
