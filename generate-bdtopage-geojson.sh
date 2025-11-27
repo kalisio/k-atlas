@@ -2,11 +2,12 @@
 set -euxo pipefail
 
 # ------------------------------------------------------
-# Usage: ./generate-bdtopage-geojson.sh <output_dir> <shapefile_or_zip>
+# Usage: ./generate-bdtopage-geojson.sh <output_dir> <shapefile_or_zip> <output_geojson_file>
 # ------------------------------------------------------
 
 WORKDIR="$1"
 INPUT_FILE="$2"
+OUTPUT_GEOJSON_FILE="$3"
 GEOJSON_DIR="$WORKDIR/geojson"
 
 
@@ -36,7 +37,6 @@ fi
 
 
 # 2. Convert Shapefile to GeoJSON
-OUTPUT_GEOJSON_FILE="$GEOJSON_DIR/$(basename "${SHAPEFILE_PATH%.*}").geojson"
 
 # Convert with mapshaper and update property for projection change
 mapshaper "$SHAPEFILE_PATH" \

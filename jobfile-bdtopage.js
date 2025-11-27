@@ -6,39 +6,51 @@ import { utils, hooks } from '@kalisio/krawler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
-const FILTERS = process.env.TOPAGE_LAYERS || ['BassinVersant','BassinHydrographique']
 
+// Layers mapping
+const LAYERS = {
+  BassinHydrographique_FXX: 'hydrographic-basins',
+  BassinVersantTopographique_FXX: 'topographic-watersheds'
+}
+
+const FILTERS = Object.keys(LAYERS)
 
 // Topage download service URL
 const url = 'https://services.sandre.eaufrance.fr/telechargement/geo/ETH/BDTopage/2025/BD_Topage_FXX_2025-shp.zip'
 
-let generateTasks = (options) => {
+let generateTasks = () => {
   return async (hook) => {
-    let tasks = []
     console.log('<i> Generating Topage tasks')
-    const store = await utils.getStoreFromHook(hook,'generateTasks')
-    const pattern = path.join(store.path, '**/*shp*')
-    const files = sync(pattern)
 
-    console.log('<i> Found', files.length, 'files')
-    files.forEach(file => {
+    const store = await utils.getStoreFromHook(hook, 'generateTasks')
+    const files = sync(path.join(store.path, '**/*shp*')) 
+
+    console.log(`<i> Found ${files.length} files`)
+
+    const tasks = files.flatMap((file) => {
       const layer = path.parse(file).name
-      if (FILTERS.some(filter => layer.includes(filter))) {
-        let task = {
-          id: _.kebabCase(layer).replace(/-fxx-shp$/, ''),
-          key: path.basename(file),
-          collection: 'bdtopage-' + _.kebabCase(layer).replace(/-fxx-shp$/, ''),
-        }
-        console.log('<i> processing', layer)
-        tasks.push(task)  
-      } else {
-        console.log('<!> skipping', layer)
+      if (!FILTERS.some(filter => layer.includes(filter))) {
+        console.log(`<!> Skipping ${layer}`)
+        return []
       }
+
+      const baseLayer = layer.replace(/-shp$/, '')
+      const outputName = LAYERS[baseLayer] || _.kebabCase(baseLayer)
+
+      console.log(`<i> Processing ${layer} as ${outputName}`)
+
+      return [{
+        id: outputName,
+        key: path.basename(file),
+        collection: 'bdtopage-' + outputName
+      }]
     })
+
     hook.data.tasks = tasks
     return hook
   }
 }
+
 hooks.registerHook('generateTasks', generateTasks)
 
 export default {
@@ -56,23 +68,21 @@ export default {
       after: {
         extractShapefiles: {
           hook: 'runCommand',
-          command: `./generate-bdtopage-geojson.sh bdtopage-output bdtopage-workdir/archives/<%= key %> >bdtopage-workdir/generate-bdtopage-geojson-<%= id %>.log 2>&1`
+          command: `./generate-bdtopage-geojson.sh bdtopage-output bdtopage-workdir/archives/<%= key %> bdtopage-output/geojson/<%= id %>.geojson >bdtopage-workdir/generate-<%= id %>.log 2>&1`,
         },
         readJson: {
-          key: 'geojson/<%= key.replace(/-shp\.zip$/, "") %>.geojson',
+          key: 'geojson/<%= id %>.geojson',
           store: "output",
         },
-
         createMongoCollection: {
-          collection : "bdtopage-<%= _.kebabCase(id) %>",
+          collection : "bdtopage-<%= id %>",
           indices: [
             { geometry: '2dsphere' },
           ]
         },
-
         writeMongoCollection: {
           chunkSize: 256,
-          collection : "bdtopage-<%= _.kebabCase(id) %>",
+          collection : "bdtopage-<%= id %>",
           checkKeys: false,
           ordered : false,
           faultTolerant: true,
@@ -105,7 +115,6 @@ export default {
           url: dbUrl,
           clientPath: 'taskTemplate.client'
         },
-
         fetchTopage: {
           hook: 'runCommand',
           command: './fetch-bdtopage.sh ' + url + ' bdtopage-workdir >bdtopage-workdir/fetch-bdtopage.log 2>&1',
@@ -117,10 +126,6 @@ export default {
           clientPath: 'taskTemplate.client'
         },
         removeStores: ['fs'],
-        deteleWorkdir: {
-          hook: 'runCommand',
-          command: 'rm -r ' + path.join(__dirname, 'bdtopage-workdir')
-        }
       },
       error: {
         disconnectMongo: {
