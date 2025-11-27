@@ -236,7 +236,7 @@ export default {
           indices: [
             { geometry: '2dsphere' },
             { 'properties.admin_level': 1 },
-            { geometry: '2dsphere', 'properties.admin_level': 1 },
+            { geometry: '2dsphere', 'properties.admin_level': 1 }
           ]
         },
         generateTasks: {}
