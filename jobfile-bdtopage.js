@@ -7,11 +7,24 @@ import { utils, hooks } from '@kalisio/krawler'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/atlas'
 
-// Layers mapping
-const LAYERS = {
-  BassinHydrographique_FXX: 'hydrographic-basins',
-  BassinVersantTopographique_FXX: 'topographic-watersheds'
+// Parse layer mapping from environment variable
+const parseLayerMapping = (envValue) => {
+  return envValue
+    .split(',')
+    .map(pair => pair.split('='))
+    .reduce((acc, [key, value]) => {
+      acc[key.trim()] = value.trim()
+      return acc
+    }, {})
 }
+
+const LAYERS = process.env.TOPAGE_LAYERS
+  ? parseLayerMapping(process.env.TOPAGE_LAYERS)
+  // Default layers to process
+  : {
+      BassinHydrographique_FXX: 'hydrographic-basins',
+      BassinVersantTopographique_FXX: 'topographic-watersheds'
+    }
 
 const FILTERS = Object.keys(LAYERS)
 
