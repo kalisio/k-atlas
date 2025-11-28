@@ -102,6 +102,49 @@ This job relies on archive shape files from IGN and the [mapshaper](https://gith
 
 https://geoservices.ign.fr/documentation/diffusion/telechargement-donnees-libres.html#bdpr
 
+## BDTOPAGE
+
+This job relies on :
+
+- [7z](https://www.7-zip.org/download.html) to extract archive shape files from eaufrance
+- [mapshaper](https://github.com/mbloch/mapshaper) to convert shape files to GeoJson
+- [tippecanoe](https://github.com/felt/tippecanoe) to generate MBTiles (optional)
+
+
+
+BDTOPAGE contains hydrographic data for the french territory and includes the following layers:
+- Watercourses
+- Water bodies
+- Elementary surfaces
+- Hydrographic sections
+- Hydrographic nodes
+- Land-sea boundaries 
+- Hydrographic basins (medium scale) 
+- Topographic watershed (medium scale)
+
+
+To select specific layers to process you can setup the `TOPAGE_LAYERS` environment variable with a comma-separated list of `<layer_name>=<output_name>` entries like this:
+
+```bash
+export TOPAGE_LAYERS="BassinHydrographique_FXX=hydrographic-basins,BassinVersantTopographique_FXX=topographic-watersheds"
+```
+
+Run the job with:
+```
+krawler --jobfile ../k-atlas/jobfile-bdtopage.js
+```
+
+bash script to generate mbtiles from bdtopage data:
+```bash
+./generate-bdtopage-mbtiles.sh <output_dir> <geojson_file> <layer_name(optional)> 
+```
+
+Two directories will be created :
+- `bdtopage-output/geojson/` containing one geojson file per layer
+- `bdtopage-output/mbtiles/` containing one mbtiles file per layer 
+- `bdtopage-output/shapefiles/` containing the original shapefiles unzipped
+- `bdtopage-workdir/` temporary working directory
+
 ## Development
 
 To debug you can run this command from a local krawler install `node --inspect . ../k-atlas/jobfile-bdpr.js`.
