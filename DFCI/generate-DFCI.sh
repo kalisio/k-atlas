@@ -18,12 +18,12 @@ declare -A FILES=(
 # Zoom configuration
 declare -A MINZOOM=(
   ["DFCI-100km"]=0
-  ["DFCI-20km"]=5
-  ["DFCI-2km"]=12
+  ["DFCI-20km"]=8
+  ["DFCI-2km"]=11
 )
 declare -A MAXZOOM=(
-  ["DFCI-100km"]=5
-  ["DFCI-20km"]=12
+  ["DFCI-100km"]=8
+  ["DFCI-20km"]=11
   ["DFCI-2km"]=15  
 )
 
