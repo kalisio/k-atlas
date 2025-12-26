@@ -23,4 +23,4 @@ jobs:
       - name: Build job
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
-        run: bash ./scripts/build.sh -p -r ${{ github.job }} -v ${{ matrix.variant }}
+        run: bash ./scripts/build.sh -s -p -r ${{ github.job }} -v ${{ matrix.variant }}
