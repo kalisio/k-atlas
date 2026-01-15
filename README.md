@@ -17,8 +17,8 @@ This job relies on:
 - [tippecanoe](https://github.com/felt/tippecanoe) to generate MBTiles,
 - [turfjs](https://turfjs.org/) to compute the position of toponyms.
 
-> [!IMPORTANT]  
-> osmium, ogr, mapshaper and tippecanoe command-line tools must be installed on your system. 
+> [!IMPORTANT]
+> osmium, ogr, mapshaper and tippecanoe command-line tools must be installed on your system.
 
 To setup the regions to process, you must export the environment variables `REGIONS` with the [GeoFabrik](https://download.geofabrik.de/) regions. For instance:
 ```bash
@@ -58,7 +58,7 @@ Then, launch the `osm-planet-boundaries` job for level 2, which uses a planet ex
 
 Last but not least, launch the `generate-osm-boundaries-mbtiles.sh` script to generate a MBTiles file from GeoJson files produced by the job or `generate-osm-boundaries-gpkg.sh` script to generate a GPKG file.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > GPKG generation requires the `ogrmerge` tool to be installed, if you are using an unstable debian version you can do this, which is not [recommanded](https://wiki.debian.org/DontBreakDebian#Don.27t_make_a_FrankenDebian) for a stable version:
 ```bash
 sudo nano /etc/apt/sources.list
@@ -120,8 +120,8 @@ BDTOPAGE contains hydrographic data for the french territory and includes the fo
 - Elementary surfaces
 - Hydrographic sections
 - Hydrographic nodes
-- Land-sea boundaries 
-- Hydrographic basins (medium scale) 
+- Land-sea boundaries
+- Hydrographic basins (medium scale)
 - Topographic watershed (medium scale)
 
 
@@ -138,12 +138,12 @@ krawler --jobfile ../k-atlas/jobfile-bdtopage.js
 
 bash script to generate mbtiles from bdtopage data:
 ```bash
-./generate-bdtopage-mbtiles.sh <output_dir> <geojson_file> <layer_name(optional)> 
+./generate-bdtopage-mbtiles.sh <output_dir> <geojson_file> <layer_name(optional)>
 ```
 
 Two directories will be created :
 - `bdtopage-output/geojson/` containing one geojson file per layer
-- `bdtopage-output/mbtiles/` containing one mbtiles file per layer 
+- `bdtopage-output/mbtiles/` containing one mbtiles file per layer
 - `bdtopage-output/shapefiles/` containing the original shapefiles unzipped
 - `bdtopage-workdir/` temporary working directory
 
@@ -156,3 +156,15 @@ To run it on the infrastructure we use Docker images based on the provided Docke
 docker build --build-arg KRAWLER_TAG=latest -f dockerfile.bdpr -t k-atlas/bdpr-latest .
 docker run --name bdpr --network=host --rm -e S3_ACCESS_KEY -e S3_SECRET_ACCESS_KEY -e S3_ENDPOINT -e S3_BUCKET -e "DEBUG=krawler*" k-atlas:bdpr-latest
 ```
+
+## Contributing
+
+Please refer to [contribution section](./CONTRIBUTING.md) for more details.
+
+## License
+
+Licensed under the [MIT license](LICENSE).
+
+Copyright (c) 2017-20xx [Kalisio](https://kalisio.com)
+
+[![Kalisio](https://kalisio.github.io/kalisioscope/kalisio/kalisio-logo-black-256x84.png)](https://kalisio.com)
